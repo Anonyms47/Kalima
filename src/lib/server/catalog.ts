@@ -72,21 +72,21 @@ function toPublic(product: Product): PublicProduct {
   return rest;
 }
 
-const productColumns = sql`
+const productColumns = () => sql`
   id, slug, name, tagline, description, included_note, status, stock_quantity,
   manual_out_of_stock, is_family_box, reward_eligible, sort_order, internal_note`;
 
 /** Catalogue public : produits publiés seulement. */
 export async function listPublishedProducts(): Promise<PublicProduct[]> {
   const rows = await sql<Product[]>`
-    select ${productColumns} from products where status = 'published' order by sort_order, name`;
+    select ${productColumns()} from products where status = 'published' order by sort_order, name`;
   return (await hydrate(sql, rows, true)).map(toPublic);
 }
 
 /** Fiche publique : un brouillon ou un produit archivé renvoie null (404). */
 export async function getPublishedProduct(slug: string): Promise<PublicProduct | null> {
   const rows = await sql<Product[]>`
-    select ${productColumns} from products where slug = ${slug} and status = 'published'`;
+    select ${productColumns()} from products where slug = ${slug} and status = 'published'`;
   const [product] = await hydrate(sql, rows, true);
   return product ? toPublic(product) : null;
 }
@@ -95,13 +95,13 @@ export async function getPublishedProduct(slug: string): Promise<PublicProduct |
 
 export async function listAllProducts(): Promise<Product[]> {
   const rows = await sql<Product[]>`
-    select ${productColumns} from products
+    select ${productColumns()} from products
     order by case status when 'published' then 0 when 'draft' then 1 else 2 end, sort_order, name`;
   return hydrate(sql, rows, false);
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
-  const rows = await sql<Product[]>`select ${productColumns} from products where id = ${id}`;
+  const rows = await sql<Product[]>`select ${productColumns()} from products where id = ${id}`;
   const [product] = await hydrate(sql, rows, false);
   return product ?? null;
 }
@@ -124,7 +124,7 @@ export function publicationIssues(product: Product): string[] {
 /** Box individuelles proposées en récompense (jamais les box famille). */
 export async function listRewardEligibleProducts(): Promise<PublicProduct[]> {
   const rows = await sql<Product[]>`
-    select ${productColumns} from products
+    select ${productColumns()} from products
     where status = 'published' and reward_eligible and not is_family_box
     order by sort_order, name`;
   return (await hydrate(sql, rows, true)).map(toPublic);

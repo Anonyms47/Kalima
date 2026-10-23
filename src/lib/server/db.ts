@@ -25,8 +25,20 @@ function createClient(): Sql {
   });
 }
 
-export const sql: Sql = globalForDb.kalimaSql ?? createClient();
-if (process.env.NODE_ENV !== "production") globalForDb.kalimaSql = sql;
+function client(): Sql {
+  globalForDb.kalimaSql ??= createClient();
+  return globalForDb.kalimaSql;
+}
+
+// Connexion ouverte à la première requête : le build n'a pas besoin de la base.
+export const sql: Sql = new Proxy((() => {}) as unknown as Sql, {
+  apply: (_target, thisArg, args) => Reflect.apply(client(), thisArg, args),
+  get: (_target, prop) => {
+    const real = client();
+    const value = Reflect.get(real, prop);
+    return typeof value === "function" ? value.bind(real) : value;
+  },
+});
 
 export type Tx = postgres.TransactionSql;
 export type Db = Sql | Tx;

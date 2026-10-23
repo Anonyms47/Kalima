@@ -63,7 +63,7 @@ async function withDetails(order: Omit<OrderDetail, "items" | "events"> | undefi
   return { ...order, items, events };
 }
 
-const orderColumns = sql`
+const orderColumns = () => sql`
   id, reference, user_id, kind, status, fulfillment, customer_name, customer_phone, customer_email,
   delivery_area, customer_note, gift_message, total, referral_code, payment_declared_at, paid_at,
   paid_amount, payment_reference, refunded_amount, reservation_expires_at, created_at`;
@@ -71,13 +71,13 @@ const orderColumns = sql`
 /** Une commande n'est visible que par son propriétaire. */
 export async function getOrderForUser(userId: string, reference: string) {
   const [order] = await sql<Omit<OrderDetail, "items" | "events">[]>`
-    select ${orderColumns} from orders where reference = ${reference.toUpperCase()} and user_id = ${userId}`;
+    select ${orderColumns()} from orders where reference = ${reference.toUpperCase()} and user_id = ${userId}`;
   return withDetails(order);
 }
 
 export async function getOrderById(id: string) {
   if (!/^[0-9a-f-]{36}$/.test(id)) return null;
-  const [order] = await sql<Omit<OrderDetail, "items" | "events">[]>`select ${orderColumns} from orders where id = ${id}`;
+  const [order] = await sql<Omit<OrderDetail, "items" | "events">[]>`select ${orderColumns()} from orders where id = ${id}`;
   return withDetails(order);
 }
 
