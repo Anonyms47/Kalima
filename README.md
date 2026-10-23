@@ -62,7 +62,7 @@ En local, `EMAIL_PROVIDER=log` écrit chaque e-mail (y compris les codes de conn
    DATABASE_URL="postgres://…:6543/postgres" npm run staff:add -- gerante@… "Prénom" owner
    DATABASE_URL="postgres://…:6543/postgres" npm run staff:add -- associee@… "Prénom" manager
    ```
-   Le site accède à la base uniquement côté serveur : aucune clé de base n'est exposée au navigateur. La migration `002_row_level_security.sql` active RLS sans politique sur toutes les tables : l'API REST publique de Supabase n'y donne donc aucun accès, tandis que le site (rôle propriétaire) fonctionne normalement. N'ajoutez pas de politique d'accès public.
+   Le site accède à la base uniquement côté serveur : aucune clé de base n'est exposée au navigateur. La migration `002_row_level_security.sql` active RLS sans politique sur toutes les tables : l'API REST publique de Supabase n'y donne donc aucun accès, tandis que le site (rôle propriétaire) fonctionne normalement. N'ajoutez pas de politique d'accès public : l'avis Supabase « RLS Enabled No Policy » est attendu. La migration `003_extensions_schema.sql` place l'extension `citext` dans le schéma `extensions` ; le site fixe `search_path = public, extensions` à chaque connexion.
 3. **Photos** : *Storage → New bucket* nommé `produits`, **public**. Renseignez `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (*Project Settings → API*, clé secrète : uniquement dans Vercel) et `STORAGE_PUBLIC_HOST` (le domaine `xxxx.supabase.co`).
 
 ### 2. E-mails (Brevo) et domaine expéditeur

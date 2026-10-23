@@ -15,6 +15,8 @@ function createClient(): Sql {
     // Compatible avec le pooler de Supabase en mode transaction.
     prepare: false,
     idle_timeout: 20,
+    // Les types d'extension (citext) sont dans le schéma « extensions ».
+    connection: { search_path: "public, extensions" },
     onnotice: () => {},
     types: {
       // Les dates "date" restent des chaînes YYYY-MM-DD.

@@ -10,7 +10,7 @@ if (!url) {
   process.exit(1);
 }
 
-const sql = postgres(url, { max: 1, onnotice: () => {} });
+const sql = postgres(url, { max: 1, onnotice: () => {}, connection: { search_path: "public, extensions" } });
 const root = path.join(import.meta.dirname, "..", "db");
 
 async function migrate() {

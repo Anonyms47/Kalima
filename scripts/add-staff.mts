@@ -7,7 +7,7 @@ if (!email || !displayName || !["owner", "manager"].includes(role)) {
   process.exit(1);
 }
 
-const sql = postgres(process.env.DATABASE_URL!, { max: 1 });
+const sql = postgres(process.env.DATABASE_URL!, { max: 1, connection: { search_path: "public, extensions" } });
 try {
   const [user] = await sql<{ id: string }[]>`
     insert into users (email, first_name) values (${email.trim().toLowerCase()}, ${displayName})
