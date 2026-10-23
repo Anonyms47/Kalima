@@ -39,9 +39,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="fr" className={`${fredoka.variable} ${dmSans.variable} ${caveat.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         {!isProductionSite ? (
-          <div role="note" className="bg-warning-soft px-4 py-2 text-center text-[0.8rem] leading-snug font-medium text-warning">
+          <aside aria-label="Préproduction" className="bg-warning-soft px-4 py-2 text-center text-[0.8rem] leading-snug font-medium text-warning">
             Site de préproduction : les commandes ne sont pas réelles et aucun paiement n&apos;est encaissé.
-          </div>
+          </aside>
         ) : null}
         <CartProvider>{children}</CartProvider>
       </body>

@@ -33,7 +33,7 @@ export default async function CataloguePage() {
       {products.length ? (
         <div className="mt-12 grid gap-6 sm:grid-cols-2">
           {products.map((product, index) => (
-            <ProductCard key={product.id} product={product} priority={index < 2} index={index} />
+            <ProductCard key={product.id} product={product} priority={index < 2} index={index} headingLevel={2} />
           ))}
         </div>
       ) : (

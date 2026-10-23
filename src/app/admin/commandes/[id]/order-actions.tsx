@@ -1,9 +1,22 @@
 "use client";
 
+import { createContext, use, useActionState, type ReactNode } from "react";
 import { transitionOrderAction } from "@/lib/actions/admin/orders";
+import type { ActionResult } from "@/lib/actions/admin/types";
 import type { Fulfillment, OrderStatus } from "@/lib/order-status";
 import { formatPrice } from "@/lib/format";
-import { ActionForm } from "../../_components/action-form";
+
+// Un seul état partagé : le message reste visible quand l'étape suivante s'affiche.
+const TransitionContext = createContext<{ action: (formData: FormData) => void; pending: boolean } | null>(null);
+
+function ActionForm({ children, className = "space-y-4" }: { children: (pending: boolean) => ReactNode; className?: string }) {
+  const ctx = use(TransitionContext)!;
+  return (
+    <form action={ctx.action} className={className}>
+      {children(ctx.pending)}
+    </form>
+  );
+}
 
 type Props = {
   orderId: string;
@@ -16,7 +29,7 @@ type Props = {
 
 function Step({ orderId, to, label, hint, tone = "primary" }: { orderId: string; to: OrderStatus; label: string; hint: string; tone?: "primary" | "violet" }) {
   return (
-    <ActionForm action={transitionOrderAction} className="space-y-2">
+    <ActionForm className="space-y-2">
       {(pending) => (
         <>
           <input type="hidden" name="orderId" value={orderId} />
@@ -35,7 +48,7 @@ function CancelForm({ orderId, paid, label = "Annuler la commande" }: { orderId:
   return (
     <details className="group rounded-2xl border border-line">
       <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-danger">{label}…</summary>
-      <ActionForm action={transitionOrderAction} className="space-y-3 border-t border-line p-4">
+      <ActionForm className="space-y-3 border-t border-line p-4">
         {(pending) => (
           <>
             <input type="hidden" name="orderId" value={orderId} />
@@ -51,11 +64,24 @@ function CancelForm({ orderId, paid, label = "Annuler la commande" }: { orderId:
   );
 }
 
-export function OrderActions({ orderId, status, fulfillment, kind, total, paid }: Props) {
+export function OrderActions(props: Props) {
+  const [state, action, pending] = useActionState(transitionOrderAction, {} as ActionResult);
+  return (
+    <TransitionContext value={{ action, pending }}>
+      {state.error ? <p role="alert" className="mb-4 rounded-xl bg-danger-soft px-4 py-3 text-sm font-medium text-danger">{state.error}</p> : null}
+      {state.message && !state.error ? (
+        <p role="status" className="mb-4 rounded-xl bg-success-soft px-4 py-3 text-sm font-medium text-success">{state.message}</p>
+      ) : null}
+      <OrderActionsInner {...props} />
+    </TransitionContext>
+  );
+}
+
+function OrderActionsInner({ orderId, status, fulfillment, kind, total, paid }: Props) {
   if (status === "awaiting_payment" || status === "expired") {
     return (
       <div className="space-y-4">
-        <ActionForm action={transitionOrderAction}>
+        <ActionForm>
           {(pending) => (
             <>
               <input type="hidden" name="orderId" value={orderId} />
@@ -127,7 +153,7 @@ export function OrderActions({ orderId, status, fulfillment, kind, total, paid }
     return (
       <details className="rounded-2xl border border-line">
         <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold">Enregistrer un remboursement…</summary>
-        <ActionForm action={transitionOrderAction} className="space-y-3 border-t border-line p-4">
+        <ActionForm className="space-y-3 border-t border-line p-4">
           {(pending) => (
             <>
               <input type="hidden" name="orderId" value={orderId} />

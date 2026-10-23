@@ -6,7 +6,8 @@ import { startingPrice } from "@/lib/pricing";
 import type { PublicProduct } from "@/lib/server/catalog";
 import { ArrowIcon } from "./icons";
 
-export function ProductCard({ product, priority = false, index = 0 }: { product: PublicProduct; priority?: boolean; index?: number }) {
+export function ProductCard({ product, priority = false, index = 0, headingLevel = 3 }: { product: PublicProduct; priority?: boolean; index?: number; headingLevel?: 2 | 3 }) {
+  const Heading = headingLevel === 2 ? "h2" : "h3";
   const image = product.images[0];
   const a = availability(product);
   const minPrice = Math.min(...product.formats.map(startingPrice));
@@ -38,7 +39,7 @@ export function ProductCard({ product, priority = false, index = 0 }: { product:
         </span>
       </div>
       <div className="flex flex-1 flex-col gap-2 p-5 sm:p-6">
-        <h3 className="display text-[1.75rem] text-night">{product.name}</h3>
+        <Heading className="display text-[1.75rem] text-night">{product.name}</Heading>
         {product.tagline ? <p className="text-[0.97rem] leading-relaxed text-muted">{product.tagline}</p> : null}
         <p className="mt-1 text-sm text-night/80">
           {product.formats.map((f) => (f.pricing === "per_unit" ? `Minimum ${f.min_units} par boîte` : f.label)).join(" · ")}

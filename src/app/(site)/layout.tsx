@@ -9,7 +9,7 @@ export default async function SiteLayout({ children }: LayoutProps<"/">) {
     <>
       <SiteHeader signedIn={Boolean(user)} isStaff={Boolean(user?.staff)} />
       {settings.announcement ? (
-        <p className="bg-night px-4 py-2.5 text-center text-sm font-medium text-white">{settings.announcement}</p>
+        <aside aria-label="Annonce" className="bg-night px-4 py-2.5 text-center text-sm font-medium text-white">{settings.announcement}</aside>
       ) : null}
       <main id="contenu" className="flex flex-1 flex-col">
         {children}

@@ -33,7 +33,7 @@ export default async function AdminProducts() {
           const issues = p.status === "draft" ? publicationIssues(p) : [];
           return (
             <li key={p.id} className="flex gap-4 rounded-2xl border border-line bg-white p-4">
-              <Link href={`/admin/produits/${p.id}`} className="relative aspect-square w-20 shrink-0 overflow-hidden rounded-xl bg-mist">
+              <Link href={`/admin/produits/${p.id}`} tabIndex={-1} aria-hidden="true" className="relative aspect-square w-20 shrink-0 overflow-hidden rounded-xl bg-mist">
                 {p.images[0] ? <Image src={p.images[0].url} alt="" fill sizes="5rem" className="object-cover" /> : <span className="grid h-full place-items-center text-xs text-muted">Sans photo</span>}
               </Link>
               <div className="min-w-0 flex-1">
