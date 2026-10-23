@@ -10,7 +10,7 @@ if (!url) {
   process.exit(1);
 }
 
-const sql = postgres(url, { max: 1, onnotice: () => {}, connection: { search_path: "public, extensions" } });
+const sql = postgres(url, { max: 1, onnotice: () => {} });
 const root = path.join(import.meta.dirname, "..", "db");
 
 async function migrate() {
@@ -37,7 +37,7 @@ async function reset() {
   if (process.env.NODE_ENV === "production" || !/localhost|127\.0\.0\.1/.test(url!)) {
     throw new Error("reset refusé : base non locale.");
   }
-  await sql.unsafe("drop schema public cascade; create schema public;");
+  await sql.unsafe("drop schema if exists extensions cascade; drop schema public cascade; create schema public;");
 }
 
 try {
