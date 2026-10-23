@@ -17,7 +17,7 @@ export type Settings = {
   orders_open: boolean;
   announcement: string;
   home_note: string;
-  reward_supplements_policy: "undecided" | "not_included" | "included";
+  reward_supplements_policy: "undecided" | "not_included";
   food_info: string;
   sales_terms: string;
   legal_notice: string;

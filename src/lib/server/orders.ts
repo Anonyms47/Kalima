@@ -65,8 +65,17 @@ type PricedLine = {
   lineTotal: number;
 };
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function assertIds(ids: (string | null | undefined)[]) {
+  if (!ids.every((id) => typeof id === "string" && UUID.test(id))) {
+    throw new OrderError("Un article de votre panier n'est plus valide. Retirez-le puis ajoutez-le à nouveau.");
+  }
+}
+
 /** Verrouille les produits (ordre stable pour éviter les interblocages). */
 async function lockProducts(tx: Tx, ids: string[]) {
+  assertIds(ids);
   const unique = [...new Set(ids)].sort();
   return tx<LockedProduct[]>`
     select id, name, status, stock_quantity, manual_out_of_stock, is_family_box, reward_eligible
@@ -77,6 +86,7 @@ async function lockProducts(tx: Tx, ids: string[]) {
 async function priceLines(tx: Tx, items: CartLineInput[], products: LockedProduct[]): Promise<PricedLine[]> {
   const lines: PricedLine[] = [];
   for (const item of items) {
+    assertIds([item.formatId, ...item.supplementIds]);
     const product = products.find((p) => p.id === item.productId);
     if (!product || product.status !== "published") {
       throw new OrderError("Un produit de votre panier n'est plus proposé. Retirez-le pour continuer.");
@@ -488,6 +498,7 @@ export async function claimReward(user: { id: string; email: string }, input: Re
   if (!phone || toWhatsappNumber(phone).length < 9) throw new OrderError("Indiquez un numéro WhatsApp valide.");
 
   return sql.begin(async (tx) => {
+    assertIds([input.rewardId, input.formatId]);
     const [reward] = await tx<{ id: string; status: string; tier: number }[]>`
       select id, status, tier from rewards where id = ${input.rewardId} and ambassador_user_id = ${user.id} for update`;
     if (!reward) throw new OrderError("Récompense introuvable.");
@@ -498,7 +509,11 @@ export async function claimReward(user: { id: string; email: string }, input: Re
     if (!product || product.status !== "published" || !product.reward_eligible || product.is_family_box) {
       throw new OrderError("Cette box ne fait pas partie des récompenses proposées.");
     }
-    const lines = await priceLines(tx, [{ ...input, boxes: 1, supplementIds: [] }], products);
+    // Box offerte : une boîte au format minimum, sans supplément.
+    const [format] = await tx<{ pricing: string; min_units: number | null }[]>`
+      select pricing, min_units from product_formats where id = ${input.formatId} and product_id = ${product.id}`;
+    const units = format?.pricing === "per_unit" ? format.min_units : null;
+    const lines = await priceLines(tx, [{ ...input, units, boxes: 1, supplementIds: [] }], products);
     await reserveStock(tx, products, boxesByProduct(lines));
 
     const [order] = await tx<{ id: string; reference: string }[]>`

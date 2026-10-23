@@ -120,3 +120,12 @@ export function publicationIssues(product: Product): string[] {
   if (product.is_family_box && product.reward_eligible) issues.push("Une box famille ne peut pas être une récompense.");
   return issues;
 }
+
+/** Box individuelles proposées en récompense (jamais les box famille). */
+export async function listRewardEligibleProducts(): Promise<PublicProduct[]> {
+  const rows = await sql<Product[]>`
+    select ${productColumns} from products
+    where status = 'published' and reward_eligible and not is_family_box
+    order by sort_order, name`;
+  return (await hydrate(sql, rows, true)).map(toPublic);
+}

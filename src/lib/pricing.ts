@@ -33,3 +33,8 @@ export function boxPrice(format: PricedFormat, units: number | null, supplements
 export function lineTotal(format: PricedFormat, units: number | null, supplements: PricedSupplement[], boxes: number) {
   return boxPrice(format, units, supplements) * boxes;
 }
+
+/** Prix minimum d'une boîte pour un format (affichage « à partir de »). */
+export function startingPrice(format: PricedFormat) {
+  return format.pricing === "fixed" ? format.price : format.price * (format.min_units ?? 1);
+}

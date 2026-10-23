@@ -106,16 +106,11 @@ function layout(ctx: EmailContext, opts: { preheader: string; title: string; not
 }
 
 function textFooter(ctx: EmailContext) {
-  return [
-    "",
-    "Une question ? Écrivez-nous :",
-    ctx.contactPhone && `Téléphone et WhatsApp : ${ctx.contactPhone}`,
-    ctx.instagram && `Instagram : @${ctx.instagram}`,
-    "",
-    "KALIMA · Cake and bakery",
-  ]
-    .filter((line) => line !== false && line !== "")
-    .join("\n");
+  const lines = ["", "Une question ? Écrivez-nous :"];
+  if (ctx.contactPhone) lines.push(`Téléphone et WhatsApp : ${ctx.contactPhone}`);
+  if (ctx.instagram) lines.push(`Instagram : @${ctx.instagram}`);
+  lines.push("", "KALIMA · Cake and bakery");
+  return lines.join("\n");
 }
 
 function p(text: string) {
