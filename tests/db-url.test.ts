@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { describeDatabaseUrl } from "@/lib/server/db";
+import { describeDatabaseUrl, resolveDatabaseUrl } from "@/lib/server/db";
 
 describe("diagnostic de DATABASE_URL", () => {
   it("décrit l'adresse sans jamais afficher le mot de passe", () => {
@@ -18,5 +18,18 @@ describe("diagnostic de DATABASE_URL", () => {
 
   it("signale une adresse illisible", () => {
     expect(describeDatabaseUrl("pas une adresse")).toContain("adresse illisible");
+  });
+});
+
+describe("mode du pooler Supabase", () => {
+  const url = "postgresql://postgres.abc:Mot2passe@aws-0-eu-north-1.pooler.supabase.com:6543/postgres";
+  it("passe en mode session (5432) sur demande, sans toucher au mot de passe", () => {
+    const resolved = resolveDatabaseUrl(url, "session");
+    expect(resolved).toContain(":5432/postgres");
+    expect(resolved).toContain("postgres.abc:Mot2passe@");
+  });
+  it("ne change rien par défaut ni pour une autre base", () => {
+    expect(resolveDatabaseUrl(url, undefined)).toBe(url);
+    expect(resolveDatabaseUrl("postgres://u:p@localhost:5432/kalima", "session")).toBe("postgres://u:p@localhost:5432/kalima");
   });
 });

@@ -26,11 +26,30 @@ export function describeDatabaseUrl(url: string) {
   }
 }
 
+/**
+ * Pooler Supabase : DATABASE_POOL_MODE=session utilise le mode session (port 5432)
+ * du même hôte à la place du mode transaction (port 6543).
+ */
+export function resolveDatabaseUrl(url: string, mode = process.env.DATABASE_POOL_MODE) {
+  if (mode !== "session") return url;
+  try {
+    const u = new URL(url);
+    if (u.hostname.endsWith(".pooler.supabase.com") && u.port === "6543") {
+      u.port = "5432";
+      return u.toString();
+    }
+  } catch {
+    // Adresse illisible : laissée telle quelle, l'erreur de connexion sera explicite.
+  }
+  return url;
+}
+
 function createClient(): Sql {
-  const url = process.env.DATABASE_URL;
-  if (!url) {
+  const raw = process.env.DATABASE_URL;
+  if (!raw) {
     throw new Error("DATABASE_URL n'est pas configurée.");
   }
+  const url = resolveDatabaseUrl(raw);
   console.info(`[base] Connexion PostgreSQL : ${describeDatabaseUrl(url)}`);
   return postgres(url, {
     max: Number(process.env.DATABASE_POOL_SIZE ?? 5),
