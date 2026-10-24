@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { Bang } from "@/components/brand";
+import { CheckoutSteps } from "@/components/checkout-steps";
 import { LoginForm } from "@/components/login-form";
 import { getCurrentUser } from "@/lib/server/auth";
 import { getSettings } from "@/lib/server/settings";
@@ -14,7 +14,7 @@ export default async function CheckoutPage() {
   if (!user) {
     return (
       <div className="mx-auto w-full max-w-xl px-4 py-14 sm:px-6">
-        <p className="eyebrow"><Bang className="h-4 w-2.5 text-lilac" /> Étape 2 sur 3</p>
+        <CheckoutSteps current={2} />
         <h1 className="display mt-3 text-4xl sm:text-5xl">Vérifions votre e-mail</h1>
         <p className="mt-3 text-lg text-muted">
           Nous y enverrons la confirmation et le suivi de votre commande. Un code suffit, pas de mot de passe.

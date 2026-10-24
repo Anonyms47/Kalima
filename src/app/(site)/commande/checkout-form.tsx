@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Bang } from "@/components/brand";
+import { CheckoutSteps } from "@/components/checkout-steps";
 import { useCart } from "@/components/cart/cart-context";
 import { lineDetail } from "@/components/cart/cart-line-summary";
 import { useQuote } from "@/components/cart/use-quote";
@@ -66,7 +66,7 @@ export function CheckoutForm({ defaults, pickupArea, ordersOpen }: Props) {
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 pt-10 pb-20 sm:px-6">
-      <p className="eyebrow"><Bang className="h-4 w-2.5 text-lilac" /> Étape 2 sur 3</p>
+      <CheckoutSteps current={2} />
       <h1 className="display mt-3 text-4xl sm:text-5xl">Vos informations</h1>
 
       {error ? (

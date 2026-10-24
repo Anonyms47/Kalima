@@ -51,8 +51,8 @@ export function SiteFooter({ settings }: { settings: Settings }) {
   // Sur téléphone, la barre « Ajouter au panier » fixe ne masque pas le bas du pied de page.
   return (
     <footer className="mt-auto bg-night text-cloud max-md:[body:has([data-sticky-cta])_&]:pb-24">
-      {/* Appel à commander */}
-      <div className="mx-auto max-w-6xl px-4 pt-12 sm:px-6 md:pt-16">
+      {/* Appel à commander, masqué sur le panier qui a déjà son bouton. */}
+      <div className="mx-auto max-w-6xl px-4 pt-12 sm:px-6 md:pt-16 [body:has([data-hide-footer-cta])_&]:hidden">
         <div className="relative overflow-hidden rounded-[var(--radius-card)] bg-violet px-6 py-8 sm:px-10 md:flex md:items-center md:justify-between md:gap-8 md:py-10">
           <Bang className="pointer-events-none absolute -top-6 right-4 h-40 w-20 text-lilac/25 md:right-10" />
           <div className="relative">

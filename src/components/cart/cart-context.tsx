@@ -26,6 +26,8 @@ type CartContextValue = {
   add: (line: Omit<CartLine, "key">) => void;
   setBoxes: (key: string, boxes: number) => void;
   remove: (key: string) => void;
+  /** Remet une ligne retirée à sa place (bouton « Annuler »). */
+  restore: (line: CartLine, index: number) => void;
   clear: () => void;
   lastAdded: number;
 };
@@ -94,6 +96,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
       },
       remove(key) {
         persist(lines.filter((l) => l.key !== key));
+      },
+      restore(line, index) {
+        if (lines.some((l) => l.key === line.key)) return;
+        const next = [...lines];
+        next.splice(Math.min(index, next.length), 0, line);
+        persist(next);
       },
       clear() {
         persist([]);
