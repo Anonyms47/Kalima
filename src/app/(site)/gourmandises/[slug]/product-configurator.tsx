@@ -176,7 +176,7 @@ export function ProductConfigurator({ product, availability, ordersOpen }: Props
       ) : null}
 
       {/* Barre d'action, fixée en bas sur téléphone ------------------------ */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 px-4 py-3 backdrop-blur md:static md:border-0 md:bg-transparent md:p-0">
+      <div data-sticky-cta className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 px-4 py-3 backdrop-blur md:static md:border-0 md:bg-transparent md:p-0">
         <div className="mx-auto flex max-w-6xl items-center gap-3">
           <div className="md:hidden">
             <p className="text-xs text-muted">Total</p>
