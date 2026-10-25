@@ -1,11 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Bang, Logo } from "./brand";
 import { useCart } from "./cart/cart-context";
-import { ArrowIcon, BagIcon, ClockIcon, CloseIcon, MenuIcon, UserIcon, WhatsappIcon } from "./icons";
+import { ArrowIcon, BagIcon, ClockIcon, InstagramIcon, UserIcon, WhatsappIcon } from "./icons";
 
 const NAV = [
   { href: "/gourmandises", label: "Nos gourmandises", hint: "Gaufres et mini pancakes" },
@@ -15,17 +16,44 @@ const NAV = [
   { href: "/contact", label: "Contact", hint: "WhatsApp, Instagram, retrait" },
 ];
 
+/** Raccourci produit affiché en haut du menu mobile. */
+export type MenuProduct = {
+  slug: string;
+  name: string;
+  image: string | null;
+  alt: string;
+  price: string;
+  orderable: boolean;
+};
+
 type Props = {
   signedIn: boolean;
   isStaff: boolean;
   whatsapp: string | null;
+  instagram: string;
   hours: string;
+  products: MenuProduct[];
 };
 
-export function SiteHeader({ signedIn, isStaff, whatsapp, hours }: Props) {
+const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/** Trois traits qui se croisent en « X » à l'ouverture. */
+function BurgerIcon({ open }: { open: boolean }) {
+  const bar = "absolute left-0 h-[2px] rounded-full bg-current transition duration-300 ease-[var(--ease-out-soft)] motion-reduce:transition-none";
+  return (
+    <span aria-hidden className="relative block h-3.5 w-5">
+      <span className={`${bar} top-0 w-5 ${open ? "translate-y-[6px] rotate-45" : ""}`} />
+      <span className={`${bar} top-[6px] w-5 ${open ? "scale-x-0 opacity-0" : ""}`} />
+      <span className={`${bar} top-[12px] ${open ? "w-5 -translate-y-[6px] -rotate-45" : "w-3.5"}`} />
+    </span>
+  );
+}
+
+export function SiteHeader({ signedIn, isStaff, whatsapp, instagram, hours, products }: Props) {
   const pathname = usePathname();
   const { count, ready, lastAdded } = useCart();
   const [open, setOpen] = useState(false);
+  const [openings, setOpenings] = useState(0);
   const [scrolled, setScrolled] = useState(false);
   // Haut du menu mobile : bas réel du header (le bandeau de préproduction peut le décaler).
   const [menuTop, setMenuTop] = useState(68);
@@ -49,18 +77,37 @@ export function SiteHeader({ signedIn, isStaff, whatsapp, hours }: Props) {
 
   useEffect(() => {
     if (!open) return;
+    const close = () => {
+      setOpen(false);
+      menuButton.current?.focus();
+    };
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setOpen(false);
-        menuButton.current?.focus();
+      if (event.key === "Escape") close();
+      // La tabulation reste dans l'en-tête et le menu tant qu'il est ouvert.
+      if (event.key === "Tab" && headerRef.current) {
+        const items = [...headerRef.current.querySelectorAll<HTMLElement>(FOCUSABLE)].filter((el) => el.getClientRects().length > 0);
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last?.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first?.focus();
+        }
       }
     };
+    // Passage en affichage ordinateur : le menu mobile n'a plus lieu d'être.
+    const desktop = window.matchMedia("(min-width: 64rem)");
+    const onDesktop = () => desktop.matches && setOpen(false);
     document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKey);
+    desktop.addEventListener("change", onDesktop);
     firstLink.current?.focus();
     return () => {
       document.body.style.overflow = "";
       window.removeEventListener("keydown", onKey);
+      desktop.removeEventListener("change", onDesktop);
     };
   }, [open]);
 
@@ -139,84 +186,126 @@ export function SiteHeader({ signedIn, isStaff, whatsapp, hours }: Props) {
           <button
             ref={menuButton}
             type="button"
-            className="grid size-11 place-items-center rounded-full text-night transition hover:bg-mist aria-expanded:bg-mist lg:hidden"
+            className="grid size-11 place-items-center rounded-full text-night transition hover:bg-mist aria-expanded:bg-night aria-expanded:text-white lg:hidden"
             aria-expanded={open}
             aria-controls="menu-mobile"
             aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
             onClick={() => {
               setMenuTop(Math.max(0, headerRef.current?.getBoundingClientRect().bottom ?? 68));
+              if (!open) setOpenings((n) => n + 1);
               setOpen((v) => !v);
             }}
           >
-            {open ? <CloseIcon /> : <MenuIcon />}
+            <BurgerIcon open={open} />
           </button>
         </div>
       </div>
 
-      {open ? (
-        <div id="menu-mobile" style={{ top: menuTop }} className="fixed inset-x-0 bottom-0 z-40 overflow-y-auto bg-cloud lg:hidden">
-          <nav aria-label="Menu" className="mx-auto flex min-h-full max-w-xl flex-col px-4 pt-4 pb-8 sm:px-6">
-            <ul className="grid gap-2">
-              {NAV.map((item, index) => {
-                const active = isActive(item.href);
-                return (
-                  <li key={item.href} className="rise" style={{ animationDelay: `${index * 40}ms` }}>
+      {/* La visibilité ne s'anime qu'à la fermeture : à l'ouverture, le menu doit être
+          visible tout de suite pour recevoir le focus. */}
+      <div
+        id="menu-mobile"
+        inert={!open}
+        style={{ top: menuTop }}
+        className={`fixed inset-x-0 bottom-0 z-40 flex flex-col bg-cloud duration-300 ease-[var(--ease-out-soft)] motion-reduce:transition-none lg:hidden ${
+          open ? "visible translate-y-0 opacity-100 transition-[opacity,transform]" : "invisible -translate-y-2 opacity-0 transition-[opacity,transform,visibility]"
+        }`}
+      >
+        {/* La clé rejoue l'apparition échelonnée à chaque ouverture. */}
+        <nav key={openings} aria-label="Menu" className="mx-auto w-full max-w-xl flex-1 overflow-y-auto overscroll-contain px-4 pt-5 pb-6 sm:px-6">
+          {products.length ? (
+            <section aria-labelledby="menu-carte" className="rise">
+              <p id="menu-carte" className="eyebrow">
+                <Bang className="h-3.5 w-2 text-lilac" /> À la carte
+              </p>
+              <ul className="mt-3 grid grid-cols-2 gap-3">
+                {products.map((product) => (
+                  <li key={product.slug}>
                     <Link
-                      ref={index === 0 ? firstLink : undefined}
-                      href={item.href}
+                      href={`/gourmandises/${product.slug}`}
                       onClick={() => setOpen(false)}
-                      aria-current={active ? "page" : undefined}
-                      className="group flex items-center justify-between gap-4 rounded-2xl border border-line bg-white px-5 py-4 transition hover:border-violet/40 aria-[current=page]:border-night aria-[current=page]:bg-night aria-[current=page]:text-white"
+                      className="group block overflow-hidden rounded-2xl border border-line bg-white transition hover:border-violet/40"
                     >
-                      <span>
-                        <span className="display block text-[1.45rem]">{item.label}</span>
-                        <span className="mt-0.5 block text-sm text-muted group-aria-[current=page]:text-cloud/70">{item.hint}</span>
+                      <span className="relative block aspect-[16/10] overflow-hidden bg-mist">
+                        {product.image ? (
+                          <Image src={product.image} alt={product.alt} fill sizes="50vw" className="object-cover object-[50%_62%] transition duration-500 group-hover:scale-[1.04]" />
+                        ) : null}
+                        {!product.orderable ? (
+                          <span className="absolute top-2 left-2 rounded-full bg-night px-2 py-0.5 text-[0.7rem] font-bold text-white">Épuisé</span>
+                        ) : null}
                       </span>
-                      {active ? (
-                        <Bang className="h-7 w-4 shrink-0 text-lilac" />
-                      ) : (
-                        <ArrowIcon className="size-5 shrink-0 text-violet transition group-hover:translate-x-0.5" />
-                      )}
+                      <span className="block px-3 py-2.5">
+                        <span className="display block text-lg leading-tight">{product.name}</span>
+                        <span className="text-sm font-semibold text-kraft-deep">{product.price}</span>
+                      </span>
                     </Link>
                   </li>
-                );
-              })}
-            </ul>
+                ))}
+              </ul>
+            </section>
+          ) : null}
 
-            <div className="rise mt-4 grid grid-cols-2 gap-2" style={{ animationDelay: `${NAV.length * 40}ms` }}>
-              <Link href={signedIn ? "/compte" : "/connexion"} onClick={() => setOpen(false)} className="btn-ghost btn-sm">
-                <UserIcon className="size-5" />
-                {signedIn ? "Mon compte" : "Se connecter"}
+          <ul className={`divide-y divide-line ${products.length ? "mt-6" : ""}`}>
+            {NAV.map((item, index) => {
+              const active = isActive(item.href);
+              return (
+                <li key={item.href} className="rise" style={{ animationDelay: `${(index + 1) * 40}ms` }}>
+                  <Link
+                    ref={index === 0 ? firstLink : undefined}
+                    href={item.href}
+                    onClick={() => setOpen(false)}
+                    aria-current={active ? "page" : undefined}
+                    className="group flex items-center gap-4 py-3"
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="display flex items-center gap-2 text-[1.3rem] leading-tight text-night group-aria-[current=page]:text-violet">
+                        {item.label}
+                        {active ? <Bang className="h-5 w-3 shrink-0 text-lilac" /> : null}
+                      </span>
+                      <span className="mt-0.5 block text-sm text-muted">{item.hint}</span>
+                    </span>
+                    <span className="grid size-9 shrink-0 place-items-center rounded-full bg-mist text-violet transition group-hover:bg-lilac-soft group-hover:translate-x-0.5">
+                      <ArrowIcon className="size-4" />
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+
+          <div className="rise mt-5 flex flex-wrap gap-2" style={{ animationDelay: `${(NAV.length + 1) * 40}ms` }}>
+            <Link href={signedIn ? "/compte" : "/connexion"} onClick={() => setOpen(false)} className="btn-ghost btn-sm">
+              <UserIcon className="size-5" />
+              {signedIn ? "Mon compte" : "Se connecter"}
+            </Link>
+            {isStaff ? (
+              <Link href="/admin" onClick={() => setOpen(false)} className="btn-ghost btn-sm">
+                Administration
               </Link>
-              <Link href="/panier" onClick={() => setOpen(false)} className="btn-ghost btn-sm">
-                <BagIcon className="size-5" />
-                Panier{hasItems ? ` (${count})` : ""}
-              </Link>
-              {isStaff ? (
-                <Link href="/admin" onClick={() => setOpen(false)} className="btn-ghost btn-sm col-span-2">
-                  Administration
-                </Link>
+            ) : null}
+            {instagram ? (
+              <a href={`https://instagram.com/${instagram}`} target="_blank" rel="noopener noreferrer" className="btn-ghost btn-sm">
+                <InstagramIcon /> @{instagram}
+              </a>
+            ) : null}
+          </div>
+        </nav>
+
+        {whatsapp ? (
+          <div className="border-t border-line bg-white px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6">
+            <div className="mx-auto max-w-xl">
+              <a href={whatsapp} target="_blank" rel="noopener noreferrer" className="btn-whatsapp w-full">
+                <WhatsappIcon /> Une question ? Écrivez-nous
+              </a>
+              {hours ? (
+                <p className="mt-2 flex items-center justify-center gap-1.5 text-xs text-muted">
+                  <ClockIcon className="size-3.5" /> {hours}
+                </p>
               ) : null}
             </div>
-
-            <div className="rise mt-auto pt-8" style={{ animationDelay: `${(NAV.length + 1) * 40}ms` }}>
-              <div className="rounded-[var(--radius-card)] bg-night p-5 text-cloud">
-                <p className="hand text-xl text-lilac">Une question avant de commander ?</p>
-                {hours ? (
-                  <p className="mt-1 flex items-center gap-2 text-sm text-cloud/75">
-                    <ClockIcon className="size-4 shrink-0" /> {hours}
-                  </p>
-                ) : null}
-                {whatsapp ? (
-                  <a href={whatsapp} target="_blank" rel="noopener noreferrer" className="btn-whatsapp mt-4 w-full">
-                    <WhatsappIcon /> Écrire sur WhatsApp
-                  </a>
-                ) : null}
-              </div>
-            </div>
-          </nav>
-        </div>
-      ) : null}
+          </div>
+        ) : null}
+      </div>
     </header>
   );
 }

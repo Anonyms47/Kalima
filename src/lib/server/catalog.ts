@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { sql, type Db } from "./db";
 
 export type ProductStatus = "draft" | "published" | "archived";
@@ -76,12 +77,12 @@ const productColumns = () => sql`
   id, slug, name, tagline, description, included_note, status, stock_quantity,
   manual_out_of_stock, is_family_box, reward_eligible, sort_order, internal_note`;
 
-/** Catalogue public : produits publiés seulement. */
-export async function listPublishedProducts(): Promise<PublicProduct[]> {
+/** Catalogue public : produits publiés seulement (une lecture par requête, menu compris). */
+export const listPublishedProducts = cache(async (): Promise<PublicProduct[]> => {
   const rows = await sql<Product[]>`
     select ${productColumns()} from products where status = 'published' order by sort_order, name`;
   return (await hydrate(sql, rows, true)).map(toPublic);
-}
+});
 
 /** Fiche publique : un brouillon ou un produit archivé renvoie null (404). */
 export async function getPublishedProduct(slug: string): Promise<PublicProduct | null> {
