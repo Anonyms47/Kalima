@@ -2,6 +2,7 @@ import "server-only";
 import type { OrderStatus } from "../order-status";
 import { sql } from "./db";
 import type { EventStatus } from "./events";
+import type { FamilyBoxItem, FamilyBoxStatus } from "./family-box";
 
 // ---------------------------------------------------------------------------
 // Tableau de bord
@@ -15,6 +16,7 @@ export type DashboardCounts = {
   in_production: number;
   out_or_ready: number;
   new_events: number;
+  new_family_boxes: number;
   failed_notifications: number;
 };
 
@@ -28,6 +30,7 @@ export async function getDashboardCounts(): Promise<DashboardCounts> {
       count(*) filter (where status = 'in_production')::int as in_production,
       count(*) filter (where status in ('out_for_delivery', 'ready_for_pickup'))::int as out_or_ready,
       (select count(*) from event_requests where status = 'new')::int as new_events,
+      (select count(*) from family_box_requests where status = 'new')::int as new_family_boxes,
       (select count(*) from notifications where status = 'failed')::int as failed_notifications
     from orders`;
   return row;
@@ -172,6 +175,39 @@ export async function listEventRequests(open: boolean) {
 export async function getEventRequest(id: string) {
   if (!/^[0-9a-f-]{36}$/.test(id)) return null;
   const [row] = await sql<EventRow[]>`select * from event_requests where id = ${id}`;
+  return row ?? null;
+}
+
+// ---------------------------------------------------------------------------
+// Box famille
+// ---------------------------------------------------------------------------
+
+export type FamilyBoxRow = {
+  id: string;
+  reference: string;
+  name: string;
+  phone: string;
+  items: FamilyBoxItem[];
+  guests: number | null;
+  wanted_date: string | null;
+  note: string | null;
+  status: FamilyBoxStatus;
+  price: number | null;
+  paid_at: string | null;
+  internal_notes: string;
+  created_at: string;
+};
+
+export async function listFamilyBoxRequests(open: boolean) {
+  return sql<FamilyBoxRow[]>`
+    select * from family_box_requests
+    where ${open ? sql`status not in ('delivered', 'cancelled')` : sql`status in ('delivered', 'cancelled')`}
+    order by created_at desc limit 200`;
+}
+
+export async function getFamilyBoxRequest(id: string) {
+  if (!/^[0-9a-f-]{36}$/.test(id)) return null;
+  const [row] = await sql<FamilyBoxRow[]>`select * from family_box_requests where id = ${id}`;
   return row ?? null;
 }
 

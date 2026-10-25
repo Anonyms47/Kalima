@@ -45,6 +45,7 @@ export default async function AdminHome({ searchParams }: PageProps<"/admin">) {
 
   const others = [
     { label: "nouvelle demande d'événement", plural: "nouvelles demandes d'événement", value: counts.new_events, href: "/admin/evenements" },
+    { label: "box famille à chiffrer", plural: "box famille à chiffrer", value: counts.new_family_boxes, href: "/admin/box-famille" },
     { label: "e-mail en échec", plural: "e-mails en échec", value: counts.failed_notifications, href: "/admin/notifications" },
   ].filter((o) => o.value > 0);
 
@@ -127,7 +128,7 @@ export default async function AdminHome({ searchParams }: PageProps<"/admin">) {
             ))}
           </ul>
         ) : (
-          <p className="hand mt-5 text-xl text-muted">pas d&apos;événement ni d&apos;e-mail en souffrance : tout roule.</p>
+          <p className="hand mt-5 text-xl text-muted">rien d&apos;autre en attente (événements, box famille, e-mails) : tout roule.</p>
         )}
       </section>
 

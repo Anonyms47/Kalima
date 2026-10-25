@@ -235,6 +235,28 @@ try {
     ok("Demande d'événement : validation des champs, envoi, visible dans l'administration");
   }
 
+  // 7 bis. Box famille : composée par le client, prix fixé dans l'administration -----
+  {
+    await page.goto(`${BASE}/box-famille`);
+    for (let i = 0; i < 3; i++) await page.getByRole("button", { name: "Augmenter : Quantité : Gaufres" }).click();
+    await page.getByRole("button", { name: "Augmenter : Quantité : Nems" }).click();
+    await page.getByRole("textbox", { name: "WhatsApp" }).fill("77 000 11 22");
+    await page.getByRole("button", { name: "Envoyer ma demande" }).last().click();
+    await page.getByText("DEMANDE REÇUE").waitFor();
+    const ref = (await page.locator('[role="status"] .tabular').first().textContent())!.trim();
+    assert.match(ref, /^BF-[A-Z0-9]{6}$/);
+    await admin.goto(`${BASE}/admin/box-famille`);
+    await admin.getByRole("link", { name: new RegExp(ref) }).click();
+    await admin.getByText("3 ×").first().waitFor();
+    await admin.getByLabel("Prix de la box (FCFA)").fill("9000");
+    await admin.getByLabel("Statut").selectOption("quoted");
+    await admin.getByRole("button", { name: "Enregistrer" }).click();
+    await admin.getByText("Box famille mise à jour.").waitFor();
+    await admin.reload();
+    await admin.getByText("9 000 FCFA").first().waitFor();
+    ok(`Box famille ${ref} : composition reçue dans l'administration, prix de 9 000 FCFA enregistré`);
+  }
+
   // 8. Ambassadeur ----------------------------------------------------------------
   {
     await page.goto(`${BASE}/compte/ambassadeur`);

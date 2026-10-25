@@ -7,7 +7,7 @@ import { AdminHeader, Count } from "../_components/ui";
 
 export default async function AdminMorePage() {
   const counts = await getDashboardCounts();
-  const badges: Record<string, number> = { "/admin/notifications": counts.failed_notifications };
+  const badges: Record<string, number> = { "/admin/notifications": counts.failed_notifications, "/admin/box-famille": counts.new_family_boxes };
   return (
     <>
       <AdminHeader kicker="et le reste…" title="Plus" />

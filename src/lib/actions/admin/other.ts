@@ -5,6 +5,7 @@ import { audit } from "@/lib/server/audit";
 import { EMAIL_PATTERN, normalizeEmail, requireStaff, staffActor } from "@/lib/server/auth";
 import { sql } from "@/lib/server/db";
 import { DEPOSIT_RATE, EVENT_STATUS_LABELS, type EventStatus } from "@/lib/server/events";
+import { FAMILY_BOX_STATUS_LABELS, type FamilyBoxStatus } from "@/lib/server/family-box";
 import { revokeReferralForOrder, syncRewards } from "@/lib/server/referrals";
 import { saveSetting, type Settings } from "@/lib/server/settings";
 import type { ActionResult } from "./types";
@@ -36,6 +37,28 @@ export async function updateEventAction(_prev: ActionResult, formData: FormData)
   await audit(sql, staffActor(staff), "event.updated", "event", id, { status, quote, depositPaid });
   revalidatePath("/admin", "layout");
   return { ok: true, message: "Demande mise à jour." };
+}
+
+// --- Box famille -------------------------------------------------------------
+
+export async function updateFamilyBoxAction(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
+  const staff = await requireStaff();
+  const id = String(formData.get("requestId") ?? "");
+  const status = String(formData.get("status") ?? "") as FamilyBoxStatus;
+  if (!(status in FAMILY_BOX_STATUS_LABELS)) return { error: "Statut inconnu." };
+  const priceRaw = String(formData.get("price") ?? "").replace(/\s/g, "");
+  const price = priceRaw ? Number(priceRaw) : null;
+  if (price !== null && (!Number.isInteger(price) || price < 0)) return { error: "Le prix doit être un montant entier en FCFA." };
+  if (price === null && status !== "new" && status !== "cancelled") return { error: "Renseignez le prix avant de changer le statut." };
+  const paid = formData.get("paid") === "on";
+  await sql`
+    update family_box_requests set status = ${status}, price = ${price},
+      paid_at = case when ${paid} then coalesce(paid_at, now()) else null end,
+      internal_notes = ${text(formData, "internalNotes", 4000)}, updated_at = now()
+    where id = ${id}`;
+  await audit(sql, staffActor(staff), "family_box.updated", "family_box", id, { status, price, paid });
+  revalidatePath("/admin", "layout");
+  return { ok: true, message: "Box famille mise à jour." };
 }
 
 // --- Ambassadeurs --------------------------------------------------------------

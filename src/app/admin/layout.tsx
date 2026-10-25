@@ -20,6 +20,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
     "/admin/commandes": counts.payments_declared + counts.rewards_to_validate + counts.to_start,
     "/admin/evenements": counts.new_events,
     "/admin/notifications": counts.failed_notifications,
+    "/admin/box-famille": counts.new_family_boxes,
   };
 
   return (
