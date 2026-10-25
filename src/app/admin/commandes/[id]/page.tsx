@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { WhatsappIcon } from "@/components/icons";
 import { OrderStatusBadge } from "@/components/order-status-badge";
+import { PaidStamp, Receipt, ReceiptLine, ReceiptTotal } from "@/components/receipt";
 import { formatDate, formatPrice } from "@/lib/format";
 import { STATUS_LABELS } from "@/lib/order-status";
 import { listNotifications } from "@/lib/server/admin-queries";
@@ -46,36 +47,48 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/comma
             <OrderActions orderId={order.id} status={order.status} fulfillment={order.fulfillment} kind={order.kind} total={order.total} paid={Boolean(order.paid_at)} />
           </Panel>
 
-          <Panel title="Contenu">
-            <ul className="divide-y divide-line">
-              {order.items.map((item) => (
-                <li key={item.id} className="flex justify-between gap-3 py-3">
-                  <div>
-                    <p className="font-semibold">{item.boxes} × {item.product_name}</p>
-                    <p className="text-sm text-muted">
-                      {item.format_label}
-                      {item.units ? ` · ${item.units} ${item.unit_label}${item.units > 1 ? "s" : ""} par boîte` : ""}
-                    </p>
-                    {item.supplements.length ? <p className="text-sm text-violet">+ {item.supplements.map((s) => s.name).join(", ")} (par boîte)</p> : null}
-                  </div>
-                  <p className="tabular text-right text-sm">
-                    <span className="block text-muted">{formatPrice(item.box_price)} / boîte</span>
-                    <strong>{formatPrice(item.line_total)}</strong>
-                  </p>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-2 flex items-baseline justify-between border-t border-line pt-3">
-              <span className="font-semibold">Total produits</span>
-              <span className="display tabular text-2xl">{formatPrice(order.total)}</span>
-            </div>
-            {order.paid_at ? (
-              <p className="mt-2 text-sm text-success">
-                Paiement vérifié le {formatDate(order.paid_at)} : {formatPrice(order.paid_amount ?? 0)}
-                {order.payment_reference ? ` (réf. ${order.payment_reference})` : ""}
-              </p>
-            ) : null}
-            {order.refunded_amount ? <p className="mt-1 text-sm text-danger">Remboursé : {formatPrice(order.refunded_amount)}</p> : null}
+          <Panel
+            title="Contenu"
+            actions={
+              <a href={`/impression/commandes/${order.id}`} target="_blank" rel="noopener noreferrer" className="btn-ghost btn-sm">
+                Imprimer le ticket
+              </a>
+            }
+          >
+            <Receipt
+              title={order.kind === "reward" ? "Box offerte" : "Commande"}
+              meta={`${order.reference} · ${formatDate(order.created_at)}`}
+              barcode={order.reference}
+              thanks={false}
+              className="mx-auto max-w-md"
+            >
+              <dl className="space-y-3 text-[0.95rem]">
+                {order.items.map((item) => (
+                  <ReceiptLine
+                    key={item.id}
+                    label={<strong>{item.boxes} × {item.product_name}</strong>}
+                    value={formatPrice(item.line_total)}
+                    detail={
+                      <>
+                        {item.format_label}
+                        {item.units ? ` · ${item.units} ${item.unit_label}${item.units > 1 ? "s" : ""} par boîte` : ""} · {formatPrice(item.box_price)} / boîte
+                        {item.supplements.length ? <span className="block text-violet">+ {item.supplements.map((s) => s.name).join(", ")} (par boîte)</span> : null}
+                      </>
+                    }
+                  />
+                ))}
+                <ReceiptLine label="Réception" value={order.fulfillment === "delivery" ? "Livraison (à convenir)" : "Retrait"} muted />
+                <ReceiptTotal label="Total" value={formatPrice(order.total)} />
+              </dl>
+              {order.paid_at ? <PaidStamp date={formatDate(order.paid_at)} /> : null}
+              {order.paid_at ? (
+                <p className="mt-2 text-center text-xs text-muted">
+                  Reçu : {formatPrice(order.paid_amount ?? 0)}
+                  {order.payment_reference ? ` · réf. ${order.payment_reference}` : ""}
+                </p>
+              ) : null}
+              {order.refunded_amount ? <p className="mt-2 text-center text-sm font-semibold text-danger">Remboursé : {formatPrice(order.refunded_amount)}</p> : null}
+            </Receipt>
           </Panel>
 
           {order.gift_message || order.customer_note ? (

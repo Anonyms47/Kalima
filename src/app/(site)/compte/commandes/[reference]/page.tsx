@@ -6,7 +6,7 @@ import { BackIcon, ClockIcon, WhatsappIcon } from "@/components/icons";
 import { Note } from "@/components/note";
 import { OrderStatusBadge } from "@/components/order-status-badge";
 import { OrderTimeline } from "@/components/order-timeline";
-import { Receipt, ReceiptLine, ReceiptTotal } from "@/components/receipt";
+import { PaidStamp, Receipt, ReceiptLine, ReceiptTotal } from "@/components/receipt";
 import { isProductionSite } from "@/lib/config";
 import { formatDate, formatPrice } from "@/lib/format";
 import { requireUser } from "@/lib/server/auth";
@@ -140,7 +140,7 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
         </div>
 
         <aside className="space-y-6">
-          <Receipt title={order.kind === "reward" ? "Box offerte" : "Récapitulatif"} titleId="recap">
+          <Receipt title={order.kind === "reward" ? "Box offerte" : "Récapitulatif"} titleId="recap" meta={`${order.reference} · ${formatDate(order.created_at)}`} barcode={order.reference}>
             <dl className="space-y-3 text-[0.95rem]">
               {order.items.map((item) => (
                 <ReceiptLine
@@ -159,14 +159,7 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
               {order.kind === "standard" ? <ReceiptLine label="Livraison" value={order.fulfillment === "delivery" ? "à convenir" : "retrait"} muted /> : null}
               <ReceiptTotal label={order.kind === "reward" ? "Offert" : "Total"} value={formatPrice(order.total)} />
             </dl>
-            {order.paid_at && order.kind === "standard" ? (
-              <p className="mt-4 flex justify-center">
-                <span className="inline-flex -rotate-6 flex-col items-center rounded-lg border-[3px] border-success/80 px-4 py-1 text-success">
-                  <span className="display text-xl tracking-[0.2em]">PAYÉ</span>
-                  <span className="text-[0.7rem] font-semibold">vérifié le {formatDate(order.paid_at)}</span>
-                </span>
-              </p>
-            ) : null}
+            {order.paid_at && order.kind === "standard" ? <PaidStamp date={formatDate(order.paid_at)} /> : null}
             <dl className="mt-5 space-y-1.5 border-t border-dashed border-night/25 pt-4 text-sm">
               <ReceiptLine label="Réception" value={order.fulfillment === "delivery" ? "Livraison" : "Retrait"} />
               {order.delivery_area ? <ReceiptLine label="Zone" value={order.delivery_area} /> : null}

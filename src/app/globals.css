@@ -150,7 +150,7 @@ body {
 
 /* Ticket de caisse : papier dentelé en bas. */
 @utility receipt {
-  background: var(--color-paper);
+  background-color: var(--color-paper);
   --tooth: 0.55rem;
   padding-bottom: calc(var(--tooth) * 3);
   mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / calc(var(--tooth) * 2) 100%;

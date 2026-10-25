@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Bang } from "@/components/brand";
 import { CurlyArrow, ScribbleHeart, SketchArrow, Squiggle } from "@/components/doodles";
 import { PetitMotWriter } from "@/components/home/petit-mot-writer";
+import { Receipt, ReceiptLine } from "@/components/receipt";
 import { ArrowIcon, GiftIcon, InstagramIcon, WhatsappIcon } from "@/components/icons";
 import { availability } from "@/lib/availability";
 import { formatPrice } from "@/lib/format";
@@ -53,10 +54,10 @@ function ProductBoard({ product }: { product: PublicProduct }) {
 }
 
 const TICKET = [
-  { step: "Vous composez votre boîte", where: "en ligne" },
-  { step: "Vous réglez la totalité", where: "par lien" },
-  { step: "On vérifie et on prépare", where: "à la demande" },
-  { step: "Livraison ou retrait", where: "WhatsApp" },
+  { step: "Vous composez votre boîte", note: "format, suppléments, petit mot" },
+  { step: "Vous réglez la totalité", note: "en une fois, par lien de paiement" },
+  { step: "On vérifie, puis on prépare", note: "tout est fait à la demande" },
+  { step: "Livraison ou retrait", note: "on s'organise sur WhatsApp" },
 ];
 
 export default async function HomePage() {
@@ -212,29 +213,31 @@ export default async function HomePage() {
 
       {/* Comment ça se passe : le ticket ------------------------------------------- */}
       <section aria-labelledby="ticket-titre" className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 sm:px-6 md:grid-cols-2 md:py-24">
-        <div className="order-2 mx-auto w-full max-w-sm drop-shadow-[0_18px_30px_rgb(14_18_54/0.18)]">
-          <div className="receipt -rotate-1 px-6 pt-7 sm:px-8">
-            <p className="display text-center text-2xl tracking-wide">KALIMA</p>
-            <p className="text-center text-xs tracking-[0.2em] text-muted uppercase">Cake and bakery · Dakar</p>
-            <h2 id="ticket-titre" className="mt-5 border-y border-dashed border-night/25 py-2 text-center text-sm font-semibold tracking-[0.14em] uppercase">
-              Votre commande, pas à pas
-            </h2>
-            <ol className="mt-4 space-y-3">
-              {TICKET.map((line, index) => (
-                <li key={line.step} className="flex items-baseline gap-2 text-[0.95rem]">
-                  <span className="tabular w-6 shrink-0 font-bold text-violet">{String(index + 1).padStart(2, "0")}</span>
-                  <span className="min-w-0 font-semibold">{line.step}</span>
-                  <span aria-hidden className="min-w-4 flex-1 translate-y-[-0.3em] border-b border-dotted border-night/30" />
-                  <span className="shrink-0 text-right text-sm text-muted">{line.where}</span>
-                </li>
-              ))}
-            </ol>
-            <p className="mt-5 border-t border-dashed border-night/25 pt-3 text-center text-sm text-muted">
-              Livraison non comprise : on en parle sur WhatsApp après votre commande.
-            </p>
-            <p className="hand mt-3 text-center text-3xl text-violet">Merci !</p>
-          </div>
-        </div>
+        <Receipt title="Votre commande, pas à pas" titleId="ticket-titre" meta="Gaufres · mini pancakes · Dakar" className="order-2 mx-auto w-full max-w-sm -rotate-1">
+          <ol className="space-y-4">
+            {TICKET.map((line, index) => (
+              <li key={line.step} className="flex gap-3">
+                <span
+                  className={`display grid size-9 shrink-0 place-items-center rounded-full text-sm ${
+                    index === 0 ? "bg-night text-white" : "border-2 border-dashed border-violet/50 text-violet"
+                  }`}
+                >
+                  {index + 1}
+                </span>
+                <span className="pt-0.5">
+                  <span className="block font-semibold leading-tight">{line.step}</span>
+                  <span className="hand block text-lg leading-tight text-violet/80">{line.note}</span>
+                </span>
+              </li>
+            ))}
+          </ol>
+          <dl className="mt-5 space-y-1.5 border-t border-dashed border-night/25 pt-4 text-sm">
+            <ReceiptLine label="Sauce chocolat" value="comprise" />
+            <ReceiptLine label="Suppléments" value={samePrice ? `+ ${formatPrice(activeSupplements[0].price)} / boîte` : "au choix"} />
+            <ReceiptLine label="Livraison" value="non comprise" muted />
+          </dl>
+          <p className="mt-3 text-center text-xs text-muted">Les modalités de livraison se règlent sur WhatsApp après la commande.</p>
+        </Receipt>
 
         <div className="order-1">
           <p className="hand text-3xl text-violet">Simple comme une boîte qu&apos;on ouvre.</p>
