@@ -41,7 +41,7 @@ export function EventForm({ defaults }: { defaults: { name: string; phone: strin
         <label htmlFor="website">Site web</label>
         <input id="website" name="website" tabIndex={-1} autoComplete="off" />
       </div>
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 [&>*]:min-w-0">
         <div>
           <label htmlFor="name" className="field-label">Nom</label>
           <input {...field("name")} required autoComplete="name" defaultValue={v.name ?? defaults.name} className="field" />
@@ -58,7 +58,7 @@ export function EventForm({ defaults }: { defaults: { name: string; phone: strin
         <input {...field("email")} type="email" required autoComplete="email" defaultValue={v.email ?? defaults.email} className="field" />
         {error("email")}
       </div>
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 [&>*]:min-w-0">
         <div>
           <label htmlFor="occasion" className="field-label">Occasion</label>
           <select {...field("occasion")} required defaultValue={v.occasion ?? ""} className="field">
@@ -73,7 +73,7 @@ export function EventForm({ defaults }: { defaults: { name: string; phone: strin
           {error("eventDate")}
         </div>
       </div>
-      <div className="grid gap-5 sm:grid-cols-[2fr_1fr]">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-[2fr_1fr] [&>*]:min-w-0">
         <div>
           <label htmlFor="location" className="field-label">Lieu</label>
           <input {...field("location")} required defaultValue={v.location ?? ""} placeholder="Quartier, salle…" className="field" />
