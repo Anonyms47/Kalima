@@ -3,20 +3,45 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Bang } from "@/components/brand";
 import { useCart, type CartLine } from "@/components/cart/cart-context";
 import { useQuote } from "@/components/cart/use-quote";
 import { CheckoutSteps } from "@/components/checkout-steps";
-import { ArrowIcon, BackIcon, CheckIcon, TrashIcon, WhatsappIcon } from "@/components/icons";
-import { Note } from "@/components/note";
+import { CurlyArrow } from "@/components/doodles";
+import { ArrowIcon, TrashIcon } from "@/components/icons";
 import { Stepper } from "@/components/stepper";
 import { formatPrice } from "@/lib/format";
+import { readPetitMot } from "@/lib/petit-mot";
 import { MAX_BOXES_PER_LINE } from "@/lib/pricing";
 
 const DELIVERY_NOTE = "Livraison non comprise. Les modalités seront convenues sur WhatsApp après votre commande.";
 
 function formatLine(line: CartLine) {
   return line.units ? `${line.formatLabel} · ${line.units} ${line.unitLabel ?? "pièce"}${line.units > 1 ? "s" : ""}` : line.formatLabel;
+}
+
+/** Le petit mot écrit sur l'accueil, ou une invitation à en glisser un. */
+function PetitMotReminder() {
+  const [text, setText] = useState("");
+  useEffect(() => {
+    // Lecture différée : le stockage local n'existe qu'au navigateur.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setText(readPetitMot());
+  }, []);
+
+  if (text) {
+    return (
+      <figure className="note-card rotate-[-1deg] !pt-8 !pb-4">
+        <blockquote className="hand text-[1.5rem] leading-[2rem] text-violet">{text}</blockquote>
+        <figcaption className="mt-2 text-right text-xs text-muted">Votre petit mot, modifiable à l&apos;étape suivante</figcaption>
+      </figure>
+    );
+  }
+  return (
+    <div className="rounded-[1.2rem] border-2 border-dashed border-kraft/60 bg-paper px-5 py-4">
+      <p className="hand text-2xl text-kraft-deep">Un petit mot à glisser dans la boîte ?</p>
+      <p className="mt-1 text-sm text-night/70">Vous pourrez l&apos;écrire à l&apos;étape suivante, ou nous laisser le choisir.</p>
+    </div>
+  );
 }
 
 export function CartView() {
@@ -59,14 +84,24 @@ export function CartView() {
 
   if (lines.length === 0) {
     return (
-      <div className="mx-auto flex w-full max-w-xl flex-col items-center px-4 py-16 text-center sm:px-6">
-        {undo ? <div className="mb-10 w-full text-left">{undo}</div> : null}
-        <Note className="w-full max-w-sm">Votre panier attend sa première gourmandise…</Note>
-        <h1 className="display mt-12 text-4xl">Votre panier est vide</h1>
-        <p className="mt-3 text-muted">Composez une boîte de gaufres ou de mini pancakes pour commencer.</p>
-        <Link href="/gourmandises" className="btn-primary mt-8">
-          Voir les gourmandises <ArrowIcon />
-        </Link>
+      <div data-hide-footer-cta className="mx-auto grid w-full max-w-5xl items-center gap-12 px-4 py-14 sm:px-6 md:grid-cols-2 md:py-20">
+        <div className="order-2 md:order-1">
+          {undo ? <div className="mb-8">{undo}</div> : null}
+          <h1 className="display text-4xl sm:text-5xl">Votre panier est vide</h1>
+          <p className="mt-4 max-w-sm text-lg leading-relaxed text-night/75">
+            Gaufres ou mini pancakes, avec les suppléments de votre choix : on prépare tout à la commande.
+          </p>
+          <Link href="/gourmandises" className="kraft-label mt-8">
+            Voir la carte <ArrowIcon className="size-5" />
+          </Link>
+        </div>
+        <figure className="relative order-1 mx-auto w-full max-w-[19rem] rotate-[3deg] bg-white p-3 pb-12 shadow-[var(--shadow-lift)] md:order-2">
+          <span aria-hidden className="absolute -top-3 left-1/2 h-6 w-24 -translate-x-1/2 -rotate-3 rounded-sm bg-lilac/80" />
+          <div className="relative aspect-[4/5] overflow-hidden">
+            <Image src="/photos/gamme-boites-ouvertes.jpg" alt="Boîtes KALIMA ouvertes" fill sizes="19rem" className="object-cover" />
+          </div>
+          <figcaption className="hand absolute right-4 bottom-3 text-2xl text-night/80">elles n&apos;attendent que vous</figcaption>
+        </figure>
       </div>
     );
   }
@@ -74,37 +109,42 @@ export function CartView() {
   return (
     <div data-hide-footer-cta className="mx-auto w-full max-w-5xl px-4 pt-8 pb-16 sm:px-6 sm:pt-10">
       <CheckoutSteps current={1} />
-      <div className="mt-5 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+      <div className="mt-5 flex flex-wrap items-end gap-x-5 gap-y-1">
         <h1 className="display text-4xl sm:text-5xl">Mon panier</h1>
-        <p className="text-muted">
-          {boxes} boîte{boxes > 1 ? "s" : ""} · {lines.length} article{lines.length > 1 ? "s" : ""}
+        <p className="hand -rotate-2 pb-1 text-2xl text-violet">
+          {boxes} boîte{boxes > 1 ? "s" : ""} en préparation
         </p>
       </div>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-[1.5fr_1fr] lg:gap-8">
-        <div className="space-y-4">
+      <div className="mt-8 grid gap-8 lg:grid-cols-[1.45fr_1fr] lg:gap-10">
+        <div className="space-y-5">
           {undo}
-          <ul className="space-y-4">
+          <ul className="space-y-5">
             {lines.map((line, index) => {
               const q = quote?.lines[index];
               return (
-                <li key={line.key} className={`card p-4 sm:p-5 ${q && !q.ok ? "border-danger/50" : ""}`}>
-                  <div className="flex gap-4">
+                <li
+                  key={line.key}
+                  className={`rounded-[1.4rem] border bg-white p-4 shadow-[var(--shadow-soft)] sm:p-5 ${q && !q.ok ? "border-danger/50" : "border-line/80"}`}
+                >
+                  <div className="flex gap-4 sm:gap-5">
                     <Link
                       href={`/gourmandises/${line.slug}`}
                       tabIndex={-1}
                       aria-hidden
-                      className="relative aspect-square w-20 shrink-0 overflow-hidden rounded-2xl bg-mist sm:w-28"
+                      className={`block w-20 shrink-0 bg-white p-1.5 pb-4 shadow-[var(--shadow-lift)] sm:w-24 ${index % 2 ? "rotate-[3deg]" : "-rotate-[3deg]"}`}
                     >
-                      {line.image ? <Image src={line.image} alt="" fill sizes="7rem" className="object-cover" /> : null}
+                      <span className="relative block aspect-square overflow-hidden bg-mist">
+                        {line.image ? <Image src={line.image} alt="" fill sizes="6rem" className="object-cover" /> : null}
+                      </span>
                     </Link>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <Link href={`/gourmandises/${line.slug}`} className="display text-xl leading-tight hover:text-violet sm:text-2xl">
+                          <Link href={`/gourmandises/${line.slug}`} className="display text-[1.4rem] leading-tight hover:text-violet sm:text-2xl">
                             {line.name}
                           </Link>
-                          <p className="mt-1 text-sm text-muted">{formatLine(line)}</p>
+                          <p className="mt-0.5 text-sm text-muted">{formatLine(line)}</p>
                         </div>
                         <button
                           type="button"
@@ -118,22 +158,21 @@ export function CartView() {
                           <TrashIcon />
                         </button>
                       </div>
-                      <ul className="mt-2.5 flex flex-wrap gap-1.5" aria-label="Suppléments">
-                        {line.supplementNames.length === 0 ? (
-                          <li className="inline-flex items-center gap-1 rounded-full bg-mist px-2.5 py-1 text-xs font-semibold text-night/70">
-                            <CheckIcon className="size-3.5 text-violet" /> Sans supplément
-                          </li>
-                        ) : null}
-                        {line.supplementNames.map((name) => (
-                          <li key={name} className="rounded-full bg-kraft-soft px-2.5 py-1 text-xs font-semibold text-kraft-deep">
-                            + {name}
-                          </li>
-                        ))}
-                      </ul>
+                      {line.supplementNames.length ? (
+                        <ul className="mt-2.5 flex flex-wrap gap-1.5" aria-label="Suppléments">
+                          {line.supplementNames.map((name) => (
+                            <li key={name} className="rounded-md bg-kraft-soft px-2 py-0.5 text-xs font-semibold text-kraft-deep">
+                              + {name}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="hand mt-1.5 text-lg text-violet/70">sans supplément</p>
+                      )}
                     </div>
                   </div>
 
-                  <div className="mt-4 flex items-center justify-between gap-3 border-t border-line pt-4">
+                  <div className="mt-4 flex items-center justify-between gap-3 border-t border-dashed border-line pt-4">
                     <Stepper
                       size="sm"
                       value={line.boxes}
@@ -143,9 +182,7 @@ export function CartView() {
                       label={`Nombre de boîtes de ${line.name}`}
                     />
                     <p className="tabular text-right">
-                      <span className="block text-xs text-muted">
-                        {q?.ok ? `${line.boxes} × ${formatPrice(q.boxPrice)}` : " "}
-                      </span>
+                      <span className="block text-xs text-muted">{q?.ok ? `${line.boxes} × ${formatPrice(q.boxPrice)}` : " "}</span>
                       <span className="text-lg font-bold">{q?.ok ? formatPrice(q.lineTotal) : loading ? "…" : "—"}</span>
                     </p>
                   </div>
@@ -158,42 +195,46 @@ export function CartView() {
               );
             })}
           </ul>
-          <Link href="/gourmandises" className="inline-flex items-center gap-2 px-1 py-2 text-sm font-semibold text-violet hover:underline">
-            <BackIcon className="size-4" /> Ajouter d&apos;autres gourmandises
+
+          <PetitMotReminder />
+
+          <Link href="/gourmandises" className="hand inline-flex items-center gap-1 text-2xl text-violet hover:underline">
+            ← encore une petite envie ?
           </Link>
         </div>
 
         <aside className="lg:sticky lg:top-24 lg:self-start">
-          <div className="card overflow-hidden">
-            <div className="p-6">
-              <h2 className="display text-2xl">Récapitulatif</h2>
-              <dl className="tabular mt-4 space-y-2.5 text-[0.95rem]">
+          <div className="drop-shadow-[0_18px_30px_rgb(14_18_54/0.16)]">
+            <div className="receipt px-6 pt-7 sm:px-7">
+              <p className="display text-center text-2xl tracking-wide">KALIMA</p>
+              <h2 className="mt-1 text-center text-xs tracking-[0.2em] text-muted uppercase">Récapitulatif</h2>
+              <dl className="tabular mt-4 space-y-2.5 border-t border-dashed border-night/25 pt-4 text-[0.95rem]">
                 {lines.map((line, index) => {
                   const q = quote?.lines[index];
                   return (
-                    <div key={line.key} className="flex justify-between gap-4">
-                      <dt className="min-w-0 truncate text-muted">
+                    <div key={line.key} className="flex items-baseline gap-2">
+                      <dt className="min-w-0 truncate">
                         {line.boxes} × {line.name}
                       </dt>
+                      <span aria-hidden className="min-w-4 flex-1 translate-y-[-0.3em] border-b border-dotted border-night/30" />
                       <dd className="shrink-0">{q?.ok ? formatPrice(q.lineTotal) : "—"}</dd>
                     </div>
                   );
                 })}
-                <div className="flex justify-between gap-4">
-                  <dt className="text-muted">Livraison</dt>
-                  <dd className="shrink-0 text-muted">À convenir</dd>
+                <div className="flex items-baseline gap-2 text-muted">
+                  <dt>Livraison</dt>
+                  <span aria-hidden className="min-w-4 flex-1 translate-y-[-0.3em] border-b border-dotted border-night/30" />
+                  <dd className="shrink-0">à convenir</dd>
                 </div>
-                <div className="flex items-baseline justify-between gap-4 border-t border-line pt-3">
-                  <dt className="font-semibold">Total produits</dt>
+                <div className="flex items-baseline justify-between gap-4 border-t border-dashed border-night/25 pt-3">
+                  <dt className="text-sm font-bold tracking-[0.14em] uppercase">Total</dt>
                   <dd className="display text-3xl" aria-live="polite">
                     {total}
                   </dd>
                 </div>
               </dl>
-              <p className="mt-4 rounded-xl bg-kraft-soft px-4 py-3 text-sm leading-relaxed text-kraft-deep">{DELIVERY_NOTE}</p>
-              {quote && !quote.ok ? (
-                <p className="mt-4 text-sm font-medium text-danger">Corrigez les lignes signalées pour continuer.</p>
-              ) : null}
+              <p className="mt-4 text-sm leading-relaxed text-kraft-deep">{DELIVERY_NOTE}</p>
+              {quote && !quote.ok ? <p className="mt-3 text-sm font-medium text-danger">Corrigez les lignes signalées pour continuer.</p> : null}
               <Link
                 href="/commande"
                 aria-disabled={!canCheckout}
@@ -201,21 +242,18 @@ export function CartView() {
               >
                 Passer commande <ArrowIcon />
               </Link>
+              <p className="hand mt-4 text-center text-2xl text-violet">Merci !</p>
             </div>
-            <ul className="space-y-2 border-t border-line bg-mist/60 px-6 py-4 text-sm text-night/80">
-              <li className="flex items-center gap-2">
-                <Bang className="h-4 w-2.5 shrink-0 text-lilac" /> Préparé à la commande, avec un petit mot dans chaque boîte
-              </li>
-              <li className="flex items-center gap-2">
-                <WhatsappIcon className="size-4 shrink-0 text-[#1f7a4d]" /> Livraison ou retrait organisés ensemble sur WhatsApp
-              </li>
-            </ul>
           </div>
+          <p className="hand mt-6 hidden items-start gap-2 text-xl leading-snug text-night/70 lg:flex">
+            <CurlyArrow className="h-10 w-12 shrink-0 -scale-x-100 text-lilac" />
+            préparé à la commande, réglé en une fois, on s&apos;organise ensemble sur WhatsApp
+          </p>
         </aside>
       </div>
 
       {/* Téléphone : total et bouton toujours à portée de pouce. */}
-      <div data-sticky-cta className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 px-4 py-3 backdrop-blur md:hidden">
+      <div data-sticky-cta className="fixed inset-x-0 bottom-0 z-30 border-t-2 border-dashed border-kraft/50 bg-paper/95 px-4 py-3 backdrop-blur md:hidden">
         <div className="mx-auto flex max-w-xl items-center justify-between gap-4">
           <p className="tabular leading-tight">
             <span className="block text-xs text-muted">

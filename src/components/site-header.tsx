@@ -5,7 +5,8 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Bang, Logo } from "./brand";
 import { useCart } from "./cart/cart-context";
-import { ArrowIcon, BagIcon, ClockIcon, InstagramIcon, UserIcon, WhatsappIcon } from "./icons";
+import { Squiggle } from "./doodles";
+import { BagIcon, InstagramIcon, UserIcon, WhatsappIcon } from "./icons";
 
 const NAV = [
   { href: "/gourmandises", label: "Nos gourmandises", hint: "Gaufres et mini pancakes" },
@@ -195,69 +196,79 @@ export function SiteHeader({ signedIn, isStaff, whatsapp, instagram, hours }: Pr
         id="menu-mobile"
         inert={!open}
         style={{ top: menuTop }}
-        className={`fixed inset-x-0 bottom-0 z-40 flex flex-col bg-cloud duration-300 ease-[var(--ease-out-soft)] motion-reduce:transition-none lg:hidden ${
+        className={`fixed inset-x-0 bottom-0 z-40 flex flex-col bg-paper duration-300 ease-[var(--ease-out-soft)] motion-reduce:transition-none lg:hidden ${
           open ? "visible translate-y-0 opacity-100 transition-[opacity,transform]" : "invisible -translate-y-2 opacity-0 transition-[opacity,transform,visibility]"
         }`}
       >
         {/* La clé rejoue l'apparition échelonnée à chaque ouverture. */}
-        <nav key={openings} aria-label="Menu" className="mx-auto w-full max-w-xl flex-1 overflow-y-auto overscroll-contain px-4 pt-3 pb-6 sm:px-6">
-          <ul className="divide-y divide-line">
+        <nav key={openings} aria-label="Menu" className="mx-auto w-full max-w-xl flex-1 overflow-y-auto overscroll-contain px-5 pt-4 pb-6 sm:px-6">
+          <p aria-hidden className="hand rise -rotate-2 text-2xl text-kraft-deep">On va où ?</p>
+          <ul className="mt-1 divide-y-2 divide-dotted divide-kraft/35">
             {NAV.map((item, index) => {
               const active = isActive(item.href);
               return (
-                <li key={item.href} className="rise" style={{ animationDelay: `${index * 40}ms` }}>
+                <li key={item.href} className="rise" style={{ animationDelay: `${(index + 1) * 40}ms` }}>
                   <Link
                     ref={index === 0 ? firstLink : undefined}
                     href={item.href}
                     onClick={() => setOpen(false)}
                     aria-current={active ? "page" : undefined}
-                    className="group flex items-center gap-4 py-4 [@media(max-height:700px)]:py-2.5"
+                    className="group flex items-center justify-between gap-4 py-3 [@media(max-height:700px)]:py-1.5"
                   >
-                    <span className="min-w-0 flex-1">
-                      <span className="display flex items-center gap-2 text-[1.7rem] leading-tight [@media(max-height:700px)]:text-[1.5rem] text-night group-aria-[current=page]:text-violet">
+                    <span className="min-w-0">
+                      <span className="display relative inline-block text-[1.9rem] leading-tight text-night [@media(max-height:700px)]:text-[1.6rem]">
                         {item.label}
-                        {active ? <Bang className="h-5 w-3 shrink-0 text-lilac" /> : null}
+                        {active ? <Squiggle className="absolute -bottom-1.5 left-0 h-2.5 w-full text-lilac" /> : null}
                       </span>
-                      <span className="mt-0.5 block text-sm text-muted">{item.hint}</span>
+                      <span className="hand block text-xl leading-tight text-violet/75">{item.hint}</span>
                     </span>
-                    <span className="grid size-10 shrink-0 place-items-center rounded-full bg-mist text-violet transition group-hover:translate-x-0.5 group-hover:bg-lilac-soft group-aria-[current=page]:bg-night group-aria-[current=page]:text-white">
-                      <ArrowIcon className="size-4" />
-                    </span>
+                    {active ? (
+                      <Bang className="h-8 w-4 shrink-0 text-lilac" />
+                    ) : (
+                      <span aria-hidden className="hand shrink-0 text-3xl text-violet/50 transition group-hover:translate-x-1 group-hover:text-violet">
+                        →
+                      </span>
+                    )}
                   </Link>
                 </li>
               );
             })}
           </ul>
 
-          <div className="rise mt-5 flex flex-wrap gap-2" style={{ animationDelay: `${NAV.length * 40}ms` }}>
-            <Link href={signedIn ? "/compte" : "/connexion"} onClick={() => setOpen(false)} className="btn-ghost btn-sm">
+          <p className="rise mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-[0.95rem] font-semibold" style={{ animationDelay: `${(NAV.length + 1) * 40}ms` }}>
+            <Link href={signedIn ? "/compte" : "/connexion"} onClick={() => setOpen(false)} className="inline-flex items-center gap-1.5 text-night underline decoration-lilac decoration-2 underline-offset-4">
               <UserIcon className="size-5" />
               {signedIn ? "Mon compte" : "Se connecter"}
             </Link>
             {isStaff ? (
-              <Link href="/admin" onClick={() => setOpen(false)} className="btn-ghost btn-sm">
-                Administration
-              </Link>
+              <>
+                <Bang className="h-4 w-2.5 text-lilac" />
+                <Link href="/admin" onClick={() => setOpen(false)} className="text-night underline decoration-lilac decoration-2 underline-offset-4">
+                  Administration
+                </Link>
+              </>
             ) : null}
             {instagram ? (
-              <a href={`https://instagram.com/${instagram}`} target="_blank" rel="noopener noreferrer" className="btn-ghost btn-sm">
-                <InstagramIcon /> @{instagram}
-              </a>
+              <>
+                <Bang className="h-4 w-2.5 text-lilac" />
+                <a href={`https://instagram.com/${instagram}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-night underline decoration-lilac decoration-2 underline-offset-4">
+                  <InstagramIcon /> @{instagram}
+                </a>
+              </>
             ) : null}
-          </div>
+          </p>
         </nav>
 
         {whatsapp ? (
-          <div className="border-t border-line bg-white px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6">
-            <div className="mx-auto max-w-xl">
-              <a href={whatsapp} target="_blank" rel="noopener noreferrer" className="btn-whatsapp w-full">
-                <WhatsappIcon /> Une question ? Écrivez-nous
+          <div className="border-t-2 border-dashed border-kraft/60 bg-kraft-soft px-5 pt-3 pb-[max(0.85rem,env(safe-area-inset-bottom))] sm:px-6">
+            <div className="mx-auto flex max-w-xl items-center justify-between gap-4">
+              <p className="leading-tight">
+                <span className="hand block text-2xl text-kraft-deep">Une question ?</span>
+                {hours ? <span className="text-xs text-night/70">{hours}</span> : null}
+              </p>
+              <a href={whatsapp} target="_blank" rel="noopener noreferrer" className="btn-whatsapp btn-sm shrink-0">
+                <WhatsappIcon /> Écrivez-nous
               </a>
-              {hours ? (
-                <p className="mt-2 flex items-center justify-center gap-1.5 text-xs text-muted">
-                  <ClockIcon className="size-3.5" /> {hours}
-                </p>
-              ) : null}
             </div>
           </div>
         ) : null}
