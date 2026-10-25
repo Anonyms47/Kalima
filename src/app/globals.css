@@ -263,3 +263,98 @@ input[type="time"]::-webkit-date-and-time-value,
 input[type="datetime-local"]::-webkit-date-and-time-value {
   text-align: left;
 }
+
+/* Listes déroulantes : chevron dessiné, texte d'invite atténué. Sur téléphone, le sélecteur natif reste
+   le plus pratique ; là où le navigateur le permet (appearance: base-select), la liste ouverte
+   devient une fiche papier bordée de kraft. */
+select.field {
+  appearance: none;
+  cursor: pointer;
+  padding-right: 2.9rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%234b4992' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.5 7.8c1.9 1.6 3.7 3.4 5.6 5 1.8-1.8 3.5-3.4 5.4-5.2'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1.15rem;
+}
+select.field:has(option[value=""]:checked) {
+  color: var(--color-muted);
+}
+select.field option {
+  color: var(--color-night);
+}
+
+@supports (appearance: base-select) {
+  @media (hover: hover) and (pointer: fine) {
+    select.field,
+    select.field::picker(select) {
+      appearance: base-select;
+    }
+    select.field {
+      display: flex;
+      align-items: center;
+      background-image: none;
+      padding-right: 1rem;
+    }
+    select.field::picker-icon {
+      content: "";
+      width: 1.15rem;
+      height: 1.15rem;
+      margin-left: auto;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%234b4992' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.5 7.8c1.9 1.6 3.7 3.4 5.6 5 1.8-1.8 3.5-3.4 5.4-5.2'/%3E%3C/svg%3E") center / contain no-repeat;
+      transition: rotate 0.2s ease;
+    }
+    select.field:open::picker-icon {
+      rotate: 180deg;
+    }
+    select.field:open {
+      border-color: var(--color-violet);
+    }
+    select.field::picker(select) {
+      margin-block: 0.45rem;
+      padding: 0.4rem;
+      border: 2px dashed color-mix(in srgb, var(--color-kraft) 70%, transparent);
+      border-radius: 1.1rem;
+      background: var(--color-paper);
+      box-shadow: var(--shadow-lift);
+      opacity: 0;
+      translate: 0 -0.35rem;
+      transition: opacity 0.16s ease, translate 0.16s ease, overlay 0.16s allow-discrete, display 0.16s allow-discrete;
+    }
+    select.field:open::picker(select) {
+      opacity: 1;
+      translate: 0 0;
+      @starting-style {
+        opacity: 0;
+        translate: 0 -0.35rem;
+      }
+    }
+    select.field option {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      min-height: 2.75rem;
+      padding: 0.55rem 0.85rem;
+      border-radius: 0.75rem;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    select.field option:hover,
+    select.field option:focus-visible {
+      background: var(--color-lilac-soft);
+      outline: none;
+    }
+    select.field option:checked {
+      font-weight: 600;
+      color: var(--color-violet);
+    }
+    select.field option::checkmark {
+      order: 1;
+      margin-left: auto;
+      content: "✓";
+      color: var(--color-violet);
+    }
+    select.field option[value=""] {
+      display: none;
+    }
+  }
+}
