@@ -54,8 +54,8 @@ describe("notifications", () => {
       "payment_confirmed",
       {
         firstName: "Awa",
-        reference: "KAL-TEST01",
-        trackingUrl: "http://localhost:3000/compte/commandes/KAL-TEST01",
+        reference: "KA-26-0001",
+        trackingUrl: "http://localhost:3000/compte/commandes/KA-26-0001",
         fulfillment: "delivery",
         kind: "standard",
         total: 3500,
@@ -69,7 +69,7 @@ describe("notifications", () => {
       },
       { appUrl: "http://localhost:3000", contactPhone: "+221 70 926 22 07", instagram: "kalimaaa_0", whatsappUrl: "https://wa.me/221709262207" },
     );
-    expect(email.subject).toContain("KAL-TEST01");
+    expect(email.subject).toContain("KA-26-0001");
     expect(email.text).toContain("Bonjour Awa");
     expect(email.text).toContain("Montant payé : 3 500 FCFA");
     expect(email.text).toContain("Livraison non comprise");

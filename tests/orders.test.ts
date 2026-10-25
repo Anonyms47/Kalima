@@ -44,6 +44,18 @@ describe("prix", () => {
     await sql`update product_formats set price = 500 where id = ${g.formats[0].id}`;
   });
 
+  it("numérote les commandes KA-AA-0001, KA-AA-0002… sans doublon", async () => {
+    const user = await makeUser();
+    const g = await product("gaufres");
+    const item = { productId: g.id, formatId: g.formats[0].id, units: 2, boxes: 1, supplementIds: [] };
+    const [a, b] = await Promise.all([createOrder(user, { ...baseCheckout, items: [item] }), createOrder(user, { ...baseCheckout, items: [item] })]);
+    const refs = await sql<{ reference: string }[]>`select reference from orders where id in (${a.id}, ${b.id}) order by reference`;
+    const yy = new Intl.DateTimeFormat("en", { year: "2-digit", timeZone: "Africa/Dakar" }).format(new Date());
+    for (const r of refs) expect(r.reference).toMatch(new RegExp(`^KA-${yy}-\\d{4}$`));
+    const [n1, n2] = refs.map((r) => Number(r.reference.slice(-4)));
+    expect(n2 - n1).toBe(1);
+  });
+
   it("refuse un nombre de gaufres sous le minimum", async () => {
     const user = await makeUser();
     const g = await product("gaufres");

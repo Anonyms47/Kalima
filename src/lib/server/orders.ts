@@ -1,6 +1,7 @@
 import "server-only";
 import { randomInt } from "node:crypto";
 import { availability } from "../availability";
+import { TIME_ZONE } from "../config";
 import { canTransition, type Fulfillment, type OrderStatus } from "../order-status";
 import { boxBasePrice, boxPrice, MAX_BOXES_PER_LINE, unitsRange } from "../pricing";
 import { toWhatsappNumber } from "../whatsapp";
@@ -14,10 +15,24 @@ export class OrderError extends Error {}
 
 const REF_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 
-export function newReference(prefix = "KAL") {
+/** Référence aléatoire (demandes d'événement). */
+export function newReference(prefix = "EVT") {
   let ref = "";
   for (let i = 0; i < 6; i++) ref += REF_ALPHABET[randomInt(REF_ALPHABET.length)];
   return `${prefix}-${ref}`;
+}
+
+/**
+ * Numéro de commande KA-26-0001, KA-26-0002… : compteur par année (heure de Dakar),
+ * incrémenté dans la transaction de la commande, donc sans doublon ni trou en cas d'échec.
+ */
+export async function nextOrderReference(tx: Tx) {
+  const year = Number(new Intl.DateTimeFormat("en", { year: "2-digit", timeZone: TIME_ZONE }).format(new Date()));
+  const [row] = await tx<{ last_value: number }[]>`
+    insert into order_counters (year, last_value) values (${year}, 1)
+    on conflict (year) do update set last_value = order_counters.last_value + 1
+    returning last_value`;
+  return `KA-${String(year).padStart(2, "0")}-${String(row.last_value).padStart(4, "0")}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -259,7 +274,7 @@ export async function createOrder(user: { id: string; email: string }, input: Ch
       insert into orders (reference, user_id, fulfillment, customer_name, customer_phone, customer_email,
         delivery_area, customer_note, gift_message, subtotal, total, ambassador_user_id, referral_code,
         payment_method, stock_reserved, reservation_expires_at)
-      values (${newReference()}, ${user.id}, ${input.fulfillment}, ${name}, ${phone}, ${user.email},
+      values (${await nextOrderReference(tx)}, ${user.id}, ${input.fulfillment}, ${name}, ${phone}, ${user.email},
         ${input.fulfillment === "delivery" ? clean(input.deliveryArea, 120) : null},
         ${cleanMultiline(input.note, 600)}, ${cleanMultiline(input.giftMessage, 300)},
         ${subtotal}, ${subtotal}, ${ambassadorId}, ${ambassadorId ? referralCode : null},
@@ -519,7 +534,7 @@ export async function claimReward(user: { id: string; email: string }, input: Re
     const [order] = await tx<{ id: string; reference: string }[]>`
       insert into orders (reference, user_id, kind, status, fulfillment, customer_name, customer_phone, customer_email,
         delivery_area, customer_note, subtotal, total, payment_method, stock_reserved, reward_id)
-      values (${newReference()}, ${user.id}, 'reward', 'reward_requested', ${input.fulfillment}, ${name}, ${phone}, ${user.email},
+      values (${await nextOrderReference(tx)}, ${user.id}, 'reward', 'reward_requested', ${input.fulfillment}, ${name}, ${phone}, ${user.email},
         ${input.fulfillment === "delivery" ? clean(input.deliveryArea, 120) : null}, ${cleanMultiline(input.note, 600)},
         0, 0, 'reward', ${product.stock_quantity !== null}, ${reward.id})
       returning id, reference`;

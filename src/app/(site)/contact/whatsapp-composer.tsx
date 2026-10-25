@@ -7,7 +7,7 @@ import { whatsappUrl } from "@/lib/whatsapp";
 const TOPICS = [
   { label: "Une commande", message: "Bonjour KALIMA ! J'aimerais commander " },
   { label: "Un événement", message: "Bonjour KALIMA ! Je prépare un événement le … pour … personnes. " },
-  { label: "Ma commande en cours", message: "Bonjour KALIMA ! Je vous écris au sujet de ma commande KAL-" },
+  { label: "Ma commande en cours", message: "Bonjour KALIMA ! Je vous écris au sujet de ma commande KA-" },
   { label: "Une question", message: "Bonjour KALIMA ! J'ai une question : " },
 ];
 

@@ -108,8 +108,8 @@ try {
     await page.getByText("7 000 FCFA").first().waitFor();
     await shot(page, "03-commande");
     await page.getByRole("button", { name: "Valider ma commande" }).click();
-    await page.waitForURL(/\/compte\/commandes\/KAL-/);
-    reference = page.url().match(/(KAL-[A-Z0-9]+)/)![1];
+    await page.waitForURL(/\/compte\/commandes\/KA-\d{2}-\d{4}/);
+    reference = page.url().match(/(KA-\d{2}-\d{4})/)![1];
     await page.getByText("Réglez votre commande").waitFor();
     await page.getByText("Le paiement en ligne n'est pas encore activé").waitFor();
     await shot(page, "04-suivi-paiement-en-attente");
