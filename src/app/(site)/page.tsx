@@ -1,9 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Bang } from "@/components/brand";
-import { ArrowIcon, ClockIcon, GiftIcon, InstagramIcon, PinIcon, WhatsappIcon } from "@/components/icons";
+import { ArrowIcon, CheckIcon, GiftIcon } from "@/components/icons";
 import { Note } from "@/components/note";
 import { ProductCard } from "@/components/product-card";
+import { formatPrice } from "@/lib/format";
+import { startingPrice } from "@/lib/pricing";
 import { listPublishedProducts, listSupplements } from "@/lib/server/catalog";
 import { getSettings } from "@/lib/server/settings";
 import { whatsappUrl } from "@/lib/whatsapp";
@@ -19,40 +21,49 @@ export default async function HomePage() {
   const [products, supplements, settings] = await Promise.all([listPublishedProducts(), listSupplements(), getSettings()]);
   const activeSupplements = supplements.filter((s) => s.active);
   const wa = whatsappUrl(settings.contact.whatsapp_number, "Bonjour KALIMA !");
+  // Prix d'appel : la boîte la moins chère du catalogue publié.
+  const prices = products.flatMap((p) => p.formats.map(startingPrice));
+  const fromPrice = prices.length ? Math.min(...prices) : null;
 
   return (
     <>
       {/* Accueil ----------------------------------------------------------- */}
       <section className="relative overflow-hidden">
         <div aria-hidden className="pointer-events-none absolute -top-32 -right-24 size-[28rem] rounded-full bg-lilac-soft blur-3xl" />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pt-8 pb-14 sm:px-6 md:grid-cols-[1.05fr_1fr] md:gap-8 md:pt-16 md:pb-20">
+        <div className="relative mx-auto grid max-w-6xl items-center gap-9 px-4 pt-6 pb-14 sm:px-6 md:grid-cols-[1.05fr_1fr] md:gap-8 md:pt-16 md:pb-20">
           <div className="rise">
             <p className="eyebrow">
               <Bang className="h-4 w-2.5 text-lilac" /> Gaufres · Mini pancakes
             </p>
-            <h1 className="display mt-4 text-[2.9rem] text-night sm:text-6xl lg:text-[4.4rem]">
+            <h1 className="display mt-3 text-[2.55rem] text-night sm:mt-4 sm:text-6xl lg:text-[4.4rem]">
               Des douceurs préparées à la commande
               <Bang className="ml-1 inline-block h-[0.8em] w-[0.42em] translate-y-[0.06em] text-lilac" />
             </h1>
-            <p className="mt-5 max-w-md text-lg leading-relaxed text-muted">
+            <p className="mt-4 max-w-md text-[1.05rem] leading-relaxed text-muted sm:mt-5 sm:text-lg">
               Choisissez votre boîte, ajoutez vos suppléments préférés : on y glisse un petit mot, et on s&apos;occupe du reste.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap [&>*]:sm:whitespace-nowrap">
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center [&>*]:sm:whitespace-nowrap">
               <Link href="/gourmandises" className="btn-primary px-7 text-base">
                 Composer ma commande
                 <ArrowIcon />
               </Link>
-              <Link href="/evenements" className="btn-ghost px-7 text-base">
-                Un événement à préparer ?
-              </Link>
+              {fromPrice ? (
+                <p className="text-center text-sm text-muted sm:text-left">
+                  Dès <strong className="display text-lg text-night">{formatPrice(fromPrice)}</strong> la boîte
+                </p>
+              ) : null}
             </div>
-            <p className="mt-6 flex items-center gap-2 text-sm text-muted">
-              <GiftIcon className="size-4 text-violet" /> Sauce chocolat toujours comprise dans le prix.
-            </p>
+            <ul className="mt-6 flex flex-wrap gap-1.5 text-[0.82rem] font-semibold text-night/80 sm:gap-2 sm:text-sm">
+              {["Préparé à la commande", "Sauce chocolat comprise", "Un petit mot dans chaque boîte"].map((item) => (
+                <li key={item} className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 ring-1 ring-line sm:px-3 sm:py-1.5">
+                  <CheckIcon className="size-4 text-violet" /> {item}
+                </li>
+              ))}
+            </ul>
           </div>
 
           <div className="relative mx-auto w-full max-w-[26rem] md:max-w-none">
-            <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] shadow-[var(--shadow-lift)] md:ml-10">
+            <div className="relative aspect-[5/4] overflow-hidden rounded-[2rem] shadow-[var(--shadow-lift)] md:ml-10 md:aspect-[4/5]">
               <Image
                 src="/photos/gamme-boites-et-pot.jpg"
                 alt="Boîtes kraft de gaufres et pot de mini pancakes KALIMA, avec chantilly et sauce chocolat"
@@ -94,7 +105,7 @@ export default async function HomePage() {
       ) : null}
 
       {/* Gourmandises ------------------------------------------------------- */}
-      <section className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 md:py-24">
+      <section className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-24">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
             <p className="eyebrow"><Bang className="h-4 w-2.5 text-lilac" /> Nos gourmandises</p>
@@ -104,13 +115,16 @@ export default async function HomePage() {
             Tout voir <ArrowIcon />
           </Link>
         </div>
-        <div className="mt-10 grid gap-6 sm:grid-cols-2">
+        {/* Téléphone : carrousel horizontal ; à partir de sm : grille. */}
+        <div className="-mx-4 mt-8 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-3 [scrollbar-width:none] sm:mx-0 sm:mt-10 sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 [&::-webkit-scrollbar]:hidden">
           {products.map((product, index) => (
-            <ProductCard key={product.id} product={product} priority={index === 0} index={index} />
+            <div key={product.id} className={`flex shrink-0 snap-start sm:w-auto [&>*]:w-full ${products.length > 1 ? "w-[82%]" : "w-full"}`}>
+              <ProductCard product={product} priority={index === 0} index={index} />
+            </div>
           ))}
         </div>
         {wa ? (
-          <p className="mt-8 rounded-2xl border border-dashed border-kraft/60 bg-paper px-5 py-4 text-[0.97rem] text-night/85">
+          <p className="mt-6 rounded-2xl border border-dashed border-kraft/60 bg-paper px-5 py-4 text-[0.97rem] text-night/85 sm:mt-8">
             Un mélange gaufres et pancakes, ou un emballage particulier ?{" "}
             <a href={wa} target="_blank" rel="noopener noreferrer" className="font-semibold text-violet underline-offset-4 hover:underline">
               Demandez-nous sur WhatsApp
@@ -122,10 +136,10 @@ export default async function HomePage() {
 
       {/* Comment ça se passe --------------------------------------------- */}
       <section className="bg-night text-white">
-        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 md:py-20">
+        <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 md:py-20">
           <p className="eyebrow !text-lilac"><Bang className="h-4 w-2.5" /> Comment ça se passe</p>
-          <h2 className="display mt-3 max-w-xl text-4xl sm:text-5xl">De votre panier à votre première bouchée</h2>
-          <ol className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <h2 className="display mt-3 max-w-xl text-[2.1rem] sm:text-5xl">De votre panier à votre première bouchée</h2>
+          <ol className="mt-10 grid gap-x-8 gap-y-9 sm:mt-12 sm:grid-cols-2 lg:grid-cols-4">
             {STEPS.map((step, index) => (
               <li key={step.title} className="relative border-t border-white/15 pt-6">
                 <span className="display absolute -top-5 left-0 grid size-10 place-items-center rounded-full bg-lilac text-lg text-night">
@@ -140,8 +154,8 @@ export default async function HomePage() {
       </section>
 
       {/* Le petit mot ------------------------------------------------------ */}
-      <section className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-20 sm:px-6 md:grid-cols-2 md:py-28">
-        <div className="relative order-2 mx-auto w-full max-w-sm md:order-1">
+      <section className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 sm:px-6 md:grid-cols-2 md:gap-12 md:py-28">
+        <div className="relative order-2 mx-auto w-full max-w-[17rem] md:order-1 md:max-w-sm">
           <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem]">
             <Image src="/photos/gaufres-chantilly.jpg" alt="Boîte kraft KALIMA de gaufres au chocolat et chantilly" fill sizes="(min-width: 768px) 24rem, 90vw" className="object-cover" />
           </div>
@@ -197,40 +211,6 @@ export default async function HomePage() {
         </article>
       </section>
 
-      {/* Contact ----------------------------------------------------------- */}
-      <section className="border-t border-line bg-white">
-        <div className="mx-auto grid max-w-6xl gap-8 px-4 py-14 sm:px-6 md:grid-cols-[1.2fr_2fr] md:items-center">
-          <h2 className="display text-4xl">On reste en contact</h2>
-          <ul className="grid gap-4 sm:grid-cols-3">
-            {settings.hours ? (
-              <li className="flex gap-3">
-                <ClockIcon className="mt-0.5 size-6 shrink-0 text-violet" />
-                <span><strong className="block">Horaires</strong><span className="text-muted">{settings.hours}</span></span>
-              </li>
-            ) : null}
-            {settings.pickup.area ? (
-              <li className="flex gap-3">
-                <PinIcon className="mt-0.5 size-6 shrink-0 text-violet" />
-                <span><strong className="block">Retrait</strong><span className="text-muted">À {settings.pickup.area}, adresse précisée à la commande</span></span>
-              </li>
-            ) : null}
-            <li className="flex gap-3">
-              <WhatsappIcon className="mt-0.5 size-6 shrink-0 text-violet" />
-              <span>
-                <strong className="block">WhatsApp</strong>
-                {wa ? (
-                  <a href={wa} target="_blank" rel="noopener noreferrer" className="text-muted underline-offset-4 hover:text-violet hover:underline">{settings.contact.phone}</a>
-                ) : null}
-              </span>
-            </li>
-          </ul>
-          {settings.contact.instagram ? (
-            <a href={`https://instagram.com/${settings.contact.instagram}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 font-semibold text-violet md:col-start-2">
-              <InstagramIcon /> Suivez-nous : @{settings.contact.instagram}
-            </a>
-          ) : null}
-        </div>
-      </section>
     </>
   );
 }
