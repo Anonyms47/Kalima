@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { CheckoutSteps } from "@/components/checkout-steps";
 import { LoginForm } from "@/components/login-form";
+import { PaperCard } from "@/components/paper-card";
 import { getCurrentUser } from "@/lib/server/auth";
 import { getSettings } from "@/lib/server/settings";
 import { CheckoutForm } from "./checkout-form";
@@ -19,9 +20,9 @@ export default async function CheckoutPage() {
         <p className="mt-3 text-lg text-muted">
           Nous y enverrons la confirmation et le suivi de votre commande. Un code suffit, pas de mot de passe.
         </p>
-        <div className="card mt-8 p-6 sm:p-8">
+        <PaperCard className="mt-10">
           <LoginForm next="/commande" submitLabel="Continuer" />
-        </div>
+        </PaperCard>
       </div>
     );
   }

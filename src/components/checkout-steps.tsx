@@ -20,7 +20,7 @@ export function CheckoutSteps({ current }: { current: 1 | 2 | 3 }) {
                     ? "bg-night text-white shadow-[0_6px_14px_-6px_rgb(14_18_54/0.6)]"
                     : done
                       ? "-rotate-12 border-2 border-violet text-violet"
-                      : "border-2 border-dashed border-night/25 text-night/40"
+                      : "border-2 border-dashed border-night/25 text-muted"
                 }`}
               >
                 {done ? <CheckIcon className="size-4" /> : step}
@@ -31,7 +31,7 @@ export function CheckoutSteps({ current }: { current: 1 | 2 | 3 }) {
                     ? "display relative text-[1.05rem] text-night"
                     : done
                       ? "hand hidden text-xl text-violet sm:inline"
-                      : "hidden text-sm font-semibold text-night/40 sm:inline"
+                      : "hidden text-sm font-semibold text-muted sm:inline"
                 }
               >
                 {label}

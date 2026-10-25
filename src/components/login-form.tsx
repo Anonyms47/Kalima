@@ -2,7 +2,8 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import { requestCodeAction, verifyCodeAction, type LoginState } from "@/lib/actions/auth";
-import { ArrowIcon, BackIcon } from "./icons";
+import { ScribbleEnvelope } from "./doodles";
+import { ArrowIcon, BackIcon, CheckIcon } from "./icons";
 
 const initial: LoginState = { step: "email", email: "" };
 const CODE_LENGTH = 6;
@@ -20,8 +21,14 @@ function CodeInput({ invalid, describedBy, onComplete }: { invalid: boolean; des
           return (
             <span
               key={i}
-              className={`display grid aspect-[4/5] place-items-center rounded-2xl border-2 bg-white text-3xl transition ${
-                invalid ? "border-danger/60" : current ? "border-violet ring-4 ring-lilac/50" : value[i] ? "border-night/25" : "border-line"
+              className={`display grid aspect-[4/5] place-items-center rounded-xl border-2 text-3xl transition ${i % 2 ? "rotate-[1.5deg]" : "-rotate-[1.5deg]"} ${
+                invalid
+                  ? "border-danger/60 bg-white"
+                  : current
+                    ? "border-violet bg-white ring-4 ring-lilac/50"
+                    : value[i]
+                      ? "border-night/25 bg-white text-night"
+                      : "border-dashed border-kraft/70 bg-kraft-soft/40"
               }`}
             >
               {value[i] ?? (current ? <span className="h-7 w-0.5 animate-pulse rounded-full bg-violet" /> : null)}
@@ -56,10 +63,25 @@ function CodeInput({ invalid, describedBy, onComplete }: { invalid: boolean; des
 
 function Steps({ current }: { current: 1 | 2 }) {
   return (
-    <ol className="mb-6 flex items-center gap-2 text-xs font-bold tracking-[0.12em] uppercase" aria-label={`Étape ${current} sur 2`}>
-      <li className={current === 1 ? "text-violet" : "text-muted"}>1. E-mail</li>
-      <li aria-hidden className="h-px w-6 bg-line" />
-      <li className={current === 2 ? "text-violet" : "text-muted"}>2. Code</li>
+    <ol className="mb-6 flex items-center gap-2.5" aria-label={`Étape ${current} sur 2`}>
+      {["e-mail", "code"].map((label, index) => {
+        const step = index + 1;
+        const done = step < current;
+        const active = step === current;
+        return (
+          <li key={label} className="flex items-center gap-2" aria-current={active ? "step" : undefined}>
+            <span
+              className={`display grid size-7 place-items-center rounded-full text-xs ${
+                active ? "bg-night text-white" : done ? "-rotate-12 border-2 border-violet text-violet" : "border-2 border-dashed border-night/25 text-muted"
+              }`}
+            >
+              {done ? <CheckIcon className="size-3.5" /> : step}
+            </span>
+            <span className={`hand text-xl ${active ? "text-night" : done ? "text-violet" : "text-muted"}`}>{label}</span>
+            {step < 2 ? <span aria-hidden className="w-8 border-t-2 border-dotted border-kraft/60" /> : null}
+          </li>
+        );
+      })}
     </ol>
   );
 }
@@ -89,7 +111,10 @@ function CodeStep({ email, next, onEdit }: { email: string; next: string; onEdit
       <input type="hidden" name="email" value={email} />
       <input type="hidden" name="next" value={next} />
       <div>
-        <label htmlFor="code" className="display block text-2xl">Entrez le code reçu</label>
+        <p className="hand flex items-center gap-2 text-2xl text-violet">
+          <ScribbleEnvelope className="h-8 w-11 shrink-0 text-kraft-deep" /> un petit mot vous attend
+        </p>
+        <label htmlFor="code" className="display mt-2 block text-2xl">Entrez le code reçu</label>
         <p className="mt-1.5 text-sm text-muted">
           Envoyé à <strong className="text-night [overflow-wrap:anywhere]">{email}</strong>{" "}
           <button type="button" onClick={onEdit} className="inline-flex items-center gap-1 font-semibold whitespace-nowrap text-violet hover:underline">

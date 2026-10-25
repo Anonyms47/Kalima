@@ -40,7 +40,7 @@ export function OrderTimeline({ status, fulfillment, events }: { status: OrderSt
               {current ? <Bang className="h-5 w-3 text-lilac" /> : done ? <CheckIcon className="size-5" /> : null}
             </span>
             <div className="pt-2">
-              <p className={current ? "display text-xl text-night" : done ? "font-semibold text-night" : "font-semibold text-night/40"}>
+              <p className={current ? "display text-xl text-night" : done ? "font-semibold text-night" : "font-semibold text-muted"}>
                 {step.label}
                 {current ? <span className="sr-only"> (étape actuelle)</span> : null}
               </p>

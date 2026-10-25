@@ -48,3 +48,14 @@ export function ScribbleHeart({ className = "size-6" }: DoodleProps) {
     </svg>
   );
 }
+
+/** Enveloppe griffonnée, pour le code envoyé par e-mail. */
+export function ScribbleEnvelope({ className = "h-10 w-14" }: DoodleProps) {
+  return (
+    <svg viewBox="0 0 56 40" className={className} {...stroke}>
+      <path d="M4 7c16-1 32-2 48 0 1 9 1 18-1 27-15 2-31 2-46 0-2-9-2-18-1-27Z" />
+      <path d="M5 8c8 7 15 12 23 15 8-3 15-9 23-15" />
+      <path d="M6 33c6-6 11-10 15-12M50 33c-6-6-10-9-14-11" />
+    </svg>
+  );
+}
