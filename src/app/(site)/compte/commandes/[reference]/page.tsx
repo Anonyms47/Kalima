@@ -6,6 +6,7 @@ import { BackIcon, ClockIcon, WhatsappIcon } from "@/components/icons";
 import { Note } from "@/components/note";
 import { OrderStatusBadge } from "@/components/order-status-badge";
 import { OrderTimeline } from "@/components/order-timeline";
+import { Receipt, ReceiptLine, ReceiptTotal } from "@/components/receipt";
 import { isProductionSite } from "@/lib/config";
 import { formatDate, formatPrice } from "@/lib/format";
 import { requireUser } from "@/lib/server/auth";
@@ -30,7 +31,7 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
   const canCancel = (awaiting || order.status === "expired") && !order.payment_declared_at;
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 pt-8 pb-20 sm:px-6">
+    <div data-hide-footer-cta className="mx-auto w-full max-w-5xl px-4 pt-8 pb-20 sm:px-6">
       <Link href="/compte" className="inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-night">
         <BackIcon className="size-4" /> Mes commandes
       </Link>
@@ -43,8 +44,8 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
 
       <header className="mt-8 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="eyebrow"><Bang className="h-4 w-2.5 text-lilac" /> {order.kind === "reward" ? "Box offerte" : "Commande"}</p>
-          <h1 className="display tabular mt-2 text-4xl sm:text-5xl">{order.reference}</h1>
+          <p className="hand -rotate-2 text-2xl text-violet">{order.kind === "reward" ? "votre box offerte" : "votre commande"}</p>
+          <h1 className="display tabular mt-1 text-4xl sm:text-5xl">{order.reference}</h1>
           <p className="mt-2 text-muted">Passée le {formatDate(order.created_at)}</p>
         </div>
         <OrderStatusBadge status={order.status} className="!px-4 !py-2 !text-sm" />
@@ -115,12 +116,15 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
             </p>
           ) : null}
 
-          <section className="card p-6 sm:p-7" aria-labelledby="suivi">
-            <h2 id="suivi" className="display text-2xl">Suivi</h2>
-            <div className="mt-5">
+          <section className="rounded-[1.4rem] border border-line/80 bg-white p-6 shadow-[var(--shadow-soft)] sm:p-7" aria-labelledby="suivi">
+            <div className="flex items-baseline justify-between gap-4">
+              <h2 id="suivi" className="display text-2xl">Où en est votre commande ?</h2>
+              <Bang className="h-7 w-4 shrink-0 text-lilac" />
+            </div>
+            <div className="mt-6">
               <OrderTimeline status={order.status} fulfillment={order.fulfillment} events={order.events} />
             </div>
-            <div className="mt-6 grid gap-3 border-t border-line pt-5 sm:grid-cols-2">
+            <div className="mt-7 grid gap-3 border-t border-dashed border-kraft/50 pt-5 sm:grid-cols-2">
               {wa ? (
                 <a href={wa} target="_blank" rel="noopener noreferrer" className="btn-whatsapp">
                   <WhatsappIcon /> Écrire à KALIMA
@@ -136,37 +140,40 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
         </div>
 
         <aside className="space-y-6">
-          <section className="card p-6" aria-labelledby="recap">
-            <h2 id="recap" className="display text-2xl">Récapitulatif</h2>
-            <ul className="mt-4 divide-y divide-line">
+          <Receipt title={order.kind === "reward" ? "Box offerte" : "Récapitulatif"} titleId="recap">
+            <dl className="space-y-3 text-[0.95rem]">
               {order.items.map((item) => (
-                <li key={item.id} className="flex justify-between gap-3 py-3">
-                  <div className="text-sm">
-                    <p className="font-semibold">{item.boxes} × {item.product_name}</p>
-                    <p className="text-muted">
+                <ReceiptLine
+                  key={item.id}
+                  label={`${item.boxes} × ${item.product_name}`}
+                  value={formatPrice(item.line_total)}
+                  detail={
+                    <>
                       {item.format_label}
                       {item.units ? ` · ${item.units} ${item.unit_label}${item.units > 1 ? "s" : ""}` : ""}
                       {item.supplements.length ? ` · ${item.supplements.map((s) => s.name).join(", ")}` : ""}
-                    </p>
-                  </div>
-                  <p className="tabular text-sm font-semibold">{formatPrice(item.line_total)}</p>
-                </li>
+                    </>
+                  }
+                />
               ))}
-            </ul>
-            <div className="mt-2 flex items-baseline justify-between border-t border-line pt-4">
-              <span className="font-semibold">{order.kind === "reward" ? "Box offerte" : "Total produits"}</span>
-              <span className="display tabular text-2xl">{formatPrice(order.total)}</span>
-            </div>
-            {order.paid_at && order.kind === "standard" ? (
-              <p className="mt-2 text-sm text-success">Paiement vérifié le {formatDate(order.paid_at)}.</p>
-            ) : null}
-            <dl className="mt-5 space-y-1 border-t border-line pt-4 text-sm">
-              <div className="flex justify-between gap-3"><dt className="text-muted">Réception</dt><dd>{order.fulfillment === "delivery" ? "Livraison" : "Retrait"}</dd></div>
-              {order.delivery_area ? <div className="flex justify-between gap-3"><dt className="text-muted">Zone</dt><dd>{order.delivery_area}</dd></div> : null}
-              <div className="flex justify-between gap-3"><dt className="text-muted">WhatsApp</dt><dd>{order.customer_phone}</dd></div>
-              {order.referral_code ? <div className="flex justify-between gap-3"><dt className="text-muted">Code ambassadeur</dt><dd className="tabular">{order.referral_code}</dd></div> : null}
+              {order.kind === "standard" ? <ReceiptLine label="Livraison" value={order.fulfillment === "delivery" ? "à convenir" : "retrait"} muted /> : null}
+              <ReceiptTotal label={order.kind === "reward" ? "Offert" : "Total"} value={formatPrice(order.total)} />
             </dl>
-          </section>
+            {order.paid_at && order.kind === "standard" ? (
+              <p className="mt-4 flex justify-center">
+                <span className="inline-flex -rotate-6 flex-col items-center rounded-lg border-[3px] border-success/80 px-4 py-1 text-success">
+                  <span className="display text-xl tracking-[0.2em]">PAYÉ</span>
+                  <span className="text-[0.7rem] font-semibold">vérifié le {formatDate(order.paid_at)}</span>
+                </span>
+              </p>
+            ) : null}
+            <dl className="mt-5 space-y-1.5 border-t border-dashed border-night/25 pt-4 text-sm">
+              <ReceiptLine label="Réception" value={order.fulfillment === "delivery" ? "Livraison" : "Retrait"} />
+              {order.delivery_area ? <ReceiptLine label="Zone" value={order.delivery_area} /> : null}
+              <ReceiptLine label="WhatsApp" value={order.customer_phone} />
+              {order.referral_code ? <ReceiptLine label="Code ambassadeur" value={order.referral_code} /> : null}
+            </dl>
+          </Receipt>
           {order.gift_message ? (
             <Note tilt="rotate-[1.5deg]" className="mx-2">
               {order.gift_message}

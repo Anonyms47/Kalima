@@ -13,9 +13,9 @@ export default async function CheckoutPage() {
 
   if (!user) {
     return (
-      <div className="mx-auto w-full max-w-xl px-4 py-14 sm:px-6">
+      <div data-hide-footer-cta className="mx-auto w-full max-w-xl px-4 py-14 sm:px-6">
         <CheckoutSteps current={2} />
-        <h1 className="display mt-3 text-4xl sm:text-5xl">Vérifions votre e-mail</h1>
+        <h1 className="display mt-5 text-4xl sm:text-5xl">Vérifions votre e-mail</h1>
         <p className="mt-3 text-lg text-muted">
           Nous y enverrons la confirmation et le suivi de votre commande. Un code suffit, pas de mot de passe.
         </p>

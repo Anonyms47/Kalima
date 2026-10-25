@@ -7,6 +7,7 @@ import { useCart, type CartLine } from "@/components/cart/cart-context";
 import { useQuote } from "@/components/cart/use-quote";
 import { CheckoutSteps } from "@/components/checkout-steps";
 import { CurlyArrow } from "@/components/doodles";
+import { Receipt, ReceiptLine, ReceiptTotal } from "@/components/receipt";
 import { ArrowIcon, TrashIcon } from "@/components/icons";
 import { Stepper } from "@/components/stepper";
 import { formatPrice } from "@/lib/format";
@@ -204,47 +205,25 @@ export function CartView() {
         </div>
 
         <aside className="lg:sticky lg:top-24 lg:self-start">
-          <div className="drop-shadow-[0_18px_30px_rgb(14_18_54/0.16)]">
-            <div className="receipt px-6 pt-7 sm:px-7">
-              <p className="display text-center text-2xl tracking-wide">KALIMA</p>
-              <h2 className="mt-1 text-center text-xs tracking-[0.2em] text-muted uppercase">Récapitulatif</h2>
-              <dl className="tabular mt-4 space-y-2.5 border-t border-dashed border-night/25 pt-4 text-[0.95rem]">
-                {lines.map((line, index) => {
-                  const q = quote?.lines[index];
-                  return (
-                    <div key={line.key} className="flex items-baseline gap-2">
-                      <dt className="min-w-0 truncate">
-                        {line.boxes} × {line.name}
-                      </dt>
-                      <span aria-hidden className="min-w-4 flex-1 translate-y-[-0.3em] border-b border-dotted border-night/30" />
-                      <dd className="shrink-0">{q?.ok ? formatPrice(q.lineTotal) : "—"}</dd>
-                    </div>
-                  );
-                })}
-                <div className="flex items-baseline gap-2 text-muted">
-                  <dt>Livraison</dt>
-                  <span aria-hidden className="min-w-4 flex-1 translate-y-[-0.3em] border-b border-dotted border-night/30" />
-                  <dd className="shrink-0">à convenir</dd>
-                </div>
-                <div className="flex items-baseline justify-between gap-4 border-t border-dashed border-night/25 pt-3">
-                  <dt className="text-sm font-bold tracking-[0.14em] uppercase">Total</dt>
-                  <dd className="display text-3xl" aria-live="polite">
-                    {total}
-                  </dd>
-                </div>
-              </dl>
-              <p className="mt-4 text-sm leading-relaxed text-kraft-deep">{DELIVERY_NOTE}</p>
-              {quote && !quote.ok ? <p className="mt-3 text-sm font-medium text-danger">Corrigez les lignes signalées pour continuer.</p> : null}
-              <Link
-                href="/commande"
-                aria-disabled={!canCheckout}
-                className={`btn-primary mt-5 w-full ${!canCheckout ? "pointer-events-none opacity-50" : ""}`}
-              >
-                Passer commande <ArrowIcon />
-              </Link>
-              <p className="hand mt-4 text-center text-2xl text-violet">Merci !</p>
-            </div>
-          </div>
+          <Receipt title="Récapitulatif">
+            <dl className="space-y-2.5 text-[0.95rem]">
+              {lines.map((line, index) => {
+                const q = quote?.lines[index];
+                return <ReceiptLine key={line.key} label={`${line.boxes} × ${line.name}`} value={q?.ok ? formatPrice(q.lineTotal) : "—"} />;
+              })}
+              <ReceiptLine label="Livraison" value="à convenir" muted />
+              <ReceiptTotal label="Total" value={total} />
+            </dl>
+            <p className="mt-4 text-sm leading-relaxed text-kraft-deep">{DELIVERY_NOTE}</p>
+            {quote && !quote.ok ? <p className="mt-3 text-sm font-medium text-danger">Corrigez les lignes signalées pour continuer.</p> : null}
+            <Link
+              href="/commande"
+              aria-disabled={!canCheckout}
+              className={`btn-primary mt-5 w-full ${!canCheckout ? "pointer-events-none opacity-50" : ""}`}
+            >
+              Passer commande <ArrowIcon />
+            </Link>
+          </Receipt>
           <p className="hand mt-6 hidden items-start gap-2 text-xl leading-snug text-night/70 lg:flex">
             <CurlyArrow className="h-10 w-12 shrink-0 -scale-x-100 text-lilac" />
             préparé à la commande, réglé en une fois, on s&apos;organise ensemble sur WhatsApp

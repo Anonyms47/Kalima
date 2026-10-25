@@ -5,6 +5,7 @@ import { CheckIcon } from "./icons";
 
 type Event = { to_status: OrderStatus; created_at: string };
 
+/** Suivi en tampons : étapes passées tamponnées, étape actuelle en bleu nuit, à venir en pointillés. */
 export function OrderTimeline({ status, fulfillment, events }: { status: OrderStatus; fulfillment: Fulfillment; events: Event[] }) {
   const steps = trackingSteps(fulfillment);
   const reached = new Map<OrderStatus, string>();
@@ -14,29 +15,36 @@ export function OrderTimeline({ status, fulfillment, events }: { status: OrderSt
   const stopped = status === "cancelled" || status === "refunded" || status === "expired";
 
   return (
-    <ol className="relative space-y-0">
+    <ol className="relative">
       {steps.map((step, index) => {
         const done = stopped ? reached.has(step.status) : index < currentIndex;
         const current = index === currentIndex && !stopped;
         const date = reached.get(step.status);
         return (
-          <li key={step.status} className="relative flex gap-4 pb-6 last:pb-0">
+          <li key={step.status} className="relative flex gap-4 pb-7 last:pb-0">
             {index < steps.length - 1 ? (
-              <span aria-hidden className={`absolute top-9 left-[1.05rem] h-[calc(100%-2.25rem)] w-0.5 ${index < currentIndex && !stopped ? "bg-violet" : "bg-line"}`} />
+              <span
+                aria-hidden
+                className={`absolute top-11 left-[1.3rem] h-[calc(100%-2.75rem)] border-l-2 ${index < currentIndex && !stopped ? "border-solid border-violet/60" : "border-dotted border-kraft/60"}`}
+              />
             ) : null}
             <span
-              className={`relative grid size-9 shrink-0 place-items-center rounded-full border-2 ${
-                current ? "border-violet bg-violet text-white" : done ? "border-violet bg-white text-violet" : "border-line bg-white text-line"
+              className={`relative grid size-11 shrink-0 place-items-center rounded-full ${
+                current
+                  ? "bg-night text-white shadow-[0_8px_18px_-8px_rgb(14_18_54/0.7)]"
+                  : done
+                    ? `${index % 2 ? "rotate-[10deg]" : "-rotate-12"} border-2 border-violet bg-white text-violet`
+                    : "border-2 border-dashed border-night/20 bg-white"
               }`}
             >
-              {current ? <Bang className="h-4 w-2.5 text-lilac" /> : done ? <CheckIcon className="size-4" /> : <span className="size-2 rounded-full bg-line" />}
+              {current ? <Bang className="h-5 w-3 text-lilac" /> : done ? <CheckIcon className="size-5" /> : null}
             </span>
-            <div className="pt-1.5">
-              <p className={`font-semibold ${done || current ? "text-night" : "text-muted"}`}>
+            <div className="pt-2">
+              <p className={current ? "display text-xl text-night" : done ? "font-semibold text-night" : "font-semibold text-night/40"}>
                 {step.label}
                 {current ? <span className="sr-only"> (étape actuelle)</span> : null}
               </p>
-              {date && (done || current) ? <p className="text-sm text-muted">{formatDate(date)}</p> : null}
+              {date && (done || current) ? <p className="hand text-lg leading-tight text-violet/80">{formatDate(date)}</p> : null}
             </div>
           </li>
         );

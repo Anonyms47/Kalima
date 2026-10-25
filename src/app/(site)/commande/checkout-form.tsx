@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { CheckoutSteps } from "@/components/checkout-steps";
+import { Receipt, ReceiptLine, ReceiptTotal } from "@/components/receipt";
 import { useCart } from "@/components/cart/cart-context";
 import { lineDetail } from "@/components/cart/cart-line-summary";
 import { useQuote } from "@/components/cart/use-quote";
@@ -67,9 +67,9 @@ export function CheckoutForm({ defaults, pickupArea, ordersOpen }: Props) {
   const canSubmit = ordersOpen && quote?.ok && !loading && !pending;
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 pt-10 pb-20 sm:px-6">
+    <div data-hide-footer-cta className="mx-auto w-full max-w-5xl px-4 pt-10 pb-20 sm:px-6">
       <CheckoutSteps current={2} />
-      <h1 className="display mt-3 text-4xl sm:text-5xl">Vos informations</h1>
+      <h1 className="display mt-5 text-4xl sm:text-5xl">Vos informations</h1>
 
       {error ? (
         <p role="alert" className="mt-6 rounded-2xl bg-danger-soft px-5 py-4 font-medium text-danger">
@@ -150,40 +150,40 @@ export function CheckoutForm({ defaults, pickupArea, ordersOpen }: Props) {
         </div>
 
         <aside className="lg:sticky lg:top-24 lg:self-start">
-          <div className="card p-6">
-            <h2 className="display text-2xl">Votre commande</h2>
-            <ul className="mt-4 space-y-3">
-              {lines.map((line, index) => (
-                <li key={line.key} className="flex gap-3">
-                  <div className="relative aspect-[4/5] w-12 shrink-0 overflow-hidden rounded-xl bg-mist">
-                    {line.image ? <Image src={line.image} alt="" fill sizes="3rem" className="object-cover" /> : null}
-                  </div>
-                  <div className="min-w-0 flex-1 text-sm">
-                    <p className="font-semibold">{line.boxes} × {line.name}</p>
-                    <p className="text-muted">{lineDetail(line)}</p>
-                    {quote?.lines[index] && !quote.lines[index].ok ? <p className="text-danger">{quote.lines[index].error}</p> : null}
-                  </div>
-                  <p className="tabular text-sm font-semibold">{quote?.lines[index]?.ok ? formatPrice(quote.lines[index].lineTotal) : "…"}</p>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-5 flex items-baseline justify-between border-t border-line pt-4">
-              <span className="font-semibold">Total à payer</span>
-              <span className="display tabular text-3xl">{quote ? formatPrice(quote.total) : "…"}</span>
-            </div>
-            <p className="mt-4 rounded-xl bg-kraft-soft px-4 py-3 text-sm leading-relaxed font-medium text-kraft-deep">
+          <Receipt title="Votre commande" thanks={false}>
+            <dl className="space-y-3 text-[0.95rem]">
+              {lines.map((line, index) => {
+                const q = quote?.lines[index];
+                return (
+                  <ReceiptLine
+                    key={line.key}
+                    label={`${line.boxes} × ${line.name}`}
+                    value={q?.ok ? formatPrice(q.lineTotal) : "…"}
+                    detail={
+                      <>
+                        {lineDetail(line)}
+                        {q && !q.ok ? <span className="block text-danger">{q.error}</span> : null}
+                      </>
+                    }
+                  />
+                );
+              })}
+              <ReceiptLine label="Livraison" value="à convenir" muted />
+              <ReceiptTotal label="Total à payer" value={quote ? formatPrice(quote.total) : "…"} />
+            </dl>
+            <p className="mt-4 text-sm leading-relaxed text-kraft-deep">
               Livraison non comprise. Les modalités seront convenues sur WhatsApp après votre commande.
             </p>
-            <p className="mt-3 text-sm text-muted">
+            <p className="mt-3 border-t border-dashed border-night/25 pt-3 text-sm text-muted">
               Paiement intégral. Après validation, vous recevez les instructions de paiement ; la commande est confirmée dès que KALIMA a vérifié sa réception.
             </p>
             <button type="submit" disabled={!canSubmit} className="btn-primary mt-5 w-full text-base">
               {pending ? "Enregistrement…" : "Valider ma commande"}
             </button>
-            <Link href="/panier" className="mt-3 block text-center text-sm font-semibold text-violet hover:underline">
-              Modifier le panier
+            <Link href="/panier" className="hand mt-3 block text-center text-xl text-violet hover:underline">
+              ← modifier le panier
             </Link>
-          </div>
+          </Receipt>
         </aside>
       </form>
     </div>
