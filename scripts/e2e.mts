@@ -61,7 +61,8 @@ try {
     const response = await fetch(`${BASE}/gourmandises/brownies`);
     assert.equal(response.status, 404);
     const catalogue = await (await fetch(`${BASE}/gourmandises`)).text();
-    assert.ok(!catalogue.includes("Brownies") && !catalogue.includes("Cinnamon") && !catalogue.includes("Box famille"));
+    // Aucune fiche de brouillon au catalogue (les noms peuvent apparaître ailleurs, ex. l'encart box famille).
+    assert.ok(["brownies", "cinnamon-rolls", "box-famille"].every((slug) => !catalogue.includes(`/gourmandises/${slug}"`)));
     ok("Les brouillons n'apparaissent pas au catalogue et leur page répond 404");
   }
 

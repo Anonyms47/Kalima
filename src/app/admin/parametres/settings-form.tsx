@@ -69,6 +69,20 @@ export function SettingsForm({ settings }: { settings: Settings }) {
             </div>
           </Panel>
 
+          <Panel title="Box famille" hint="à composer, puis sur WhatsApp">
+            <p className="mb-4 text-sm text-muted">
+              Le client choisit les quantités de chaque produit, puis envoie sa composition sur WhatsApp : vous lui proposez le prix. Un produit par ligne.
+            </p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field id="familySweet" label="Côté sucré">
+                <textarea id="familySweet" name="familySweet" rows={6} defaultValue={settings.family_box.sweet.join("\n")} className="field" />
+              </Field>
+              <Field id="familySalty" label="Côté salé">
+                <textarea id="familySalty" name="familySalty" rows={6} defaultValue={settings.family_box.salty.join("\n")} className="field" />
+              </Field>
+            </div>
+          </Panel>
+
           <Panel title="Ambassadeurs">
             <Field id="rewardPolicy" label="Suppléments sur les box offertes" hint="Tant que ce point n'est pas décidé, la box est remise sans supplément et rien n'est promis.">
               <select id="rewardPolicy" name="rewardPolicy" defaultValue={settings.reward_supplements_policy} className="field">

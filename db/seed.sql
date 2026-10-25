@@ -88,5 +88,6 @@ insert into settings (key, value) values
   ('reward_supplements_policy', '"undecided"'),
   ('food_info', '""'),
   ('sales_terms', '""'),
-  ('legal_notice', '""')
+  ('legal_notice', '""'),
+  ('family_box', '{"sweet": ["Gaufres", "Mini pancakes", "Brownies"], "salty": ["Croque-monsieur", "Frites", "Nems", "Mini tortillas"]}')
 on conflict (key) do nothing;

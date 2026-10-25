@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ScribbleEnvelope } from "@/components/doodles";
-import { WhatsappIcon } from "@/components/icons";
+import Link from "next/link";
+import { ArrowIcon, WhatsappIcon } from "@/components/icons";
 import { Note } from "@/components/note";
 import { ProductCard } from "@/components/product-card";
 import { listPublishedProducts } from "@/lib/server/catalog";
@@ -43,6 +44,29 @@ export default async function CataloguePage() {
           <p className="mt-2 text-muted">Aucune gourmandise n&apos;est disponible en ligne pour le moment. Revenez très vite !</p>
         </div>
       )}
+
+      {/* Box famille : composée par le client, prix donné sur WhatsApp. */}
+      <section aria-labelledby="box-famille" className="mt-20 overflow-hidden rounded-[1.6rem] bg-night text-white shadow-[var(--shadow-lift)]">
+        <div className="grid items-center gap-8 p-7 sm:p-10 md:grid-cols-[1.2fr_1fr]">
+          <div>
+            <p className="hand -rotate-2 text-2xl text-lilac">sucré &amp; salé, pour toute la tablée</p>
+            <h2 id="box-famille" className="display mt-1 text-4xl">La box famille</h2>
+            <p className="mt-3 max-w-md leading-relaxed text-white/80">
+              Composez votre box à votre goût, côté sucré comme côté salé, puis envoyez-la sur WhatsApp : on vous répond avec le prix.
+            </p>
+            <Link href="/box-famille" className="kraft-label mt-6">
+              Je compose ma box <ArrowIcon className="size-5" />
+            </Link>
+          </div>
+          <ul aria-hidden className="flex flex-wrap gap-2.5 md:justify-end">
+            {[...settings.family_box.sweet, ...settings.family_box.salty].map((item, index) => (
+              <li key={item} className={`hand rounded-lg border-2 border-dashed border-lilac/50 px-3 py-1 text-xl text-lilac ${index % 2 ? "rotate-2" : "-rotate-2"}`}>
+                {item.toLowerCase()}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
 
       {wa ? (
         /* Commande spéciale : un petit mot épinglé, comme une demande glissée sous la porte. */

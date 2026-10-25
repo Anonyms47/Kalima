@@ -8,7 +8,7 @@ const BASE = process.env.BASE_URL ?? "http://localhost:3200";
 const require = createRequire(import.meta.url);
 const axeSource = await readFile(require.resolve("axe-core/axe.min.js"), "utf8");
 const privatePages = (process.env.A11Y_PRIVATE ?? "").split(",").filter(Boolean);
-const pages = [...privatePages, "/", "/gourmandises", "/gourmandises/gaufres", "/gourmandises/mini-pancakes", "/panier", "/connexion", "/evenements", "/ambassadeurs", "/notre-histoire", "/contact", "/infos/commande-et-retrait", "/infos/confidentialite"];
+const pages = [...privatePages, "/", "/gourmandises", "/gourmandises/gaufres", "/gourmandises/mini-pancakes", "/panier", "/connexion", "/evenements", "/box-famille", "/ambassadeurs", "/notre-histoire", "/contact", "/infos/commande-et-retrait", "/infos/confidentialite"];
 
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH ?? "/opt/pw-browsers/chromium-1243/chrome-linux64/chrome" });
 const context = await browser.newContext({ viewport: { width: 390, height: 844 } });

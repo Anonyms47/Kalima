@@ -21,6 +21,8 @@ export type Settings = {
   food_info: string;
   sales_terms: string;
   legal_notice: string;
+  /** Box famille composée par le client puis envoyée sur WhatsApp (pas de prix en ligne). */
+  family_box: { sweet: string[]; salty: string[] };
 };
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -36,6 +38,10 @@ export const DEFAULT_SETTINGS: Settings = {
   food_info: "",
   sales_terms: "",
   legal_notice: "",
+  family_box: {
+    sweet: ["Gaufres", "Mini pancakes", "Brownies"],
+    salty: ["Croque-monsieur", "Frites", "Nems", "Mini tortillas"],
+  },
 };
 
 async function load(db: Db): Promise<Settings> {

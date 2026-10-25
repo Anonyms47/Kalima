@@ -82,6 +82,15 @@ export async function setAmbassadorActiveAction(formData: FormData) {
 
 // --- Paramètres --------------------------------------------------------------
 
+/** Une valeur par ligne (liste de la box famille). */
+function lines(formData: FormData, key: string) {
+  return String(formData.get(key) ?? "")
+    .split(/\r?\n/)
+    .map((line) => line.trim().replace(/\s+/g, " ").slice(0, 60))
+    .filter(Boolean)
+    .slice(0, 30);
+}
+
 export async function saveSettingsAction(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
   const staff = await requireStaff();
   const paymentLink = text(formData, "paymentLink", 500);
@@ -110,6 +119,7 @@ export async function saveSettingsAction(_prev: ActionResult, formData: FormData
     reward_supplements_policy: policy,
     food_info: text(formData, "foodInfo", 6000),
     sales_terms: text(formData, "salesTerms", 20000),
+    family_box: { sweet: lines(formData, "familySweet"), salty: lines(formData, "familySalty") },
   };
   await sql.begin(async (tx) => {
     for (const [key, value] of Object.entries(values)) {

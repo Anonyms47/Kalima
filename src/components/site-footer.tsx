@@ -6,6 +6,7 @@ import { ArrowIcon, ClockIcon, InstagramIcon, PhoneIcon, PinIcon, WhatsappIcon }
 
 const shopLinks = [
   { href: "/gourmandises", label: "Nos gourmandises" },
+  { href: "/box-famille", label: "Box famille" },
   { href: "/evenements", label: "Événements" },
   { href: "/ambassadeurs", label: "Ambassadeurs" },
   { href: "/notre-histoire", label: "Notre histoire" },
