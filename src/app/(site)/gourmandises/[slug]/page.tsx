@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BackIcon } from "@/components/icons";
+import { BackIcon, CheckIcon } from "@/components/icons";
 import { availability } from "@/lib/availability";
 import { getPublishedProduct } from "@/lib/server/catalog";
 import { getSettings } from "@/lib/server/settings";
@@ -26,19 +26,21 @@ export default async function ProductPage({ params }: PageProps<"/gourmandises/[
   if (!product) notFound();
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 pt-6 pb-32 sm:px-6 md:pt-10 md:pb-20">
-      <Link href="/gourmandises" className="inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-night">
-        <BackIcon className="size-4" /> Toutes les gourmandises
+    <div data-hide-footer-cta className="mx-auto w-full max-w-6xl px-4 pt-6 pb-32 sm:px-6 md:pt-10 md:pb-20">
+      <Link href="/gourmandises" className="group inline-flex min-h-11 items-center gap-2 text-violet">
+        <BackIcon className="size-4 transition group-hover:-translate-x-0.5" />
+        <span className="hand text-2xl">toute la carte</span>
       </Link>
-      <div className="mt-5 grid gap-8 md:grid-cols-[1fr_1.05fr] md:gap-12">
+      <div className="mt-6 grid gap-12 md:grid-cols-[1fr_1.05fr] md:gap-14">
         <ProductGallery images={product.images} name={product.name} />
         <div>
-          <h1 className="display text-5xl sm:text-6xl">{product.name}</h1>
-          {product.tagline ? <p className="mt-3 text-lg text-muted">{product.tagline}</p> : null}
-          {product.description ? <p className="mt-5 leading-relaxed text-night/85">{product.description}</p> : null}
+          <p className="hand -rotate-2 text-3xl text-violet">préparé à la commande</p>
+          <h1 className="display mt-1 text-5xl sm:text-6xl">{product.name}</h1>
+          {product.tagline ? <p className="mt-3 text-lg font-medium text-night/80">{product.tagline}</p> : null}
+          {product.description ? <p className="mt-4 leading-relaxed text-night/75">{product.description}</p> : null}
           {product.included_note ? (
-            <p className="mt-5 inline-flex items-center gap-2 rounded-full bg-success-soft px-4 py-2 text-sm font-semibold text-success">
-              <span aria-hidden>✓</span> {product.included_note}
+            <p className="mt-6 inline-flex -rotate-2 items-center gap-2 rounded-lg border-[3px] border-success/70 px-3 py-1.5 text-sm font-bold text-success">
+              <CheckIcon className="size-4" /> {product.included_note}
             </p>
           ) : null}
           <ProductConfigurator

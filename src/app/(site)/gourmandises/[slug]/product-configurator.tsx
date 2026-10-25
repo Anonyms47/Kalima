@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Bang } from "@/components/brand";
 import { useCart } from "@/components/cart/cart-context";
-import { CheckIcon } from "@/components/icons";
+import { ArrowIcon, CheckIcon } from "@/components/icons";
+import { Receipt, ReceiptLine, ReceiptTotal } from "@/components/receipt";
 import { Stepper } from "@/components/stepper";
 import type { Availability } from "@/lib/availability";
 import { formatPrice } from "@/lib/format";
@@ -61,53 +61,55 @@ export function ProductConfigurator({ product, availability, ordersOpen }: Props
     setBoxes(1);
   }
 
+  const stepCount = product.supplements.length ? 3 : 2;
+  const total = oneBox * Math.min(boxes, maxBoxes);
+
   return (
-    <div className="mt-8 space-y-7">
+    <div className="mt-10 space-y-9">
       {/* 1. Format ------------------------------------------------------- */}
       <fieldset>
-        <legend className="display flex items-center gap-2 text-xl">
-          <span className="grid size-7 place-items-center rounded-full bg-night text-sm text-white">1</span>
+        <StepLegend n={1} hint={perUnit ? `minimum ${range.min} par boîte` : "selon votre faim"}>
           {perUnit && product.formats.length === 1 ? "Votre boîte" : "Choisissez le format"}
-        </legend>
+        </StepLegend>
         {product.formats.length > 1 ? (
-          <div className="mt-3 grid grid-cols-2 gap-3">
+          <div className="mt-4 grid grid-cols-2 gap-3">
             {product.formats.map((f) => (
               <label
                 key={f.id}
-                className="relative cursor-pointer rounded-2xl border-2 border-line bg-white p-4 transition hover:border-violet/50 has-[:checked]:border-violet has-[:checked]:bg-lilac-soft/60 has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-lilac"
+                className="relative cursor-pointer rounded-[1.1rem] border-2 border-dashed border-kraft/60 bg-paper p-4 transition hover:border-violet/50 has-[:checked]:-rotate-1 has-[:checked]:border-solid has-[:checked]:border-violet has-[:checked]:bg-white has-[:checked]:shadow-[var(--shadow-soft)] has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-lilac"
               >
-                <input type="radio" name="format" value={f.id} checked={f.id === format.id} onChange={() => setFormatId(f.id)} className="sr-only" />
+                <input type="radio" name="format" value={f.id} checked={f.id === format.id} onChange={() => setFormatId(f.id)} className="peer sr-only" />
                 <span className="display block text-lg">{f.label}</span>
-                <span className="tabular mt-1 block font-semibold text-violet">
+                <span className="tabular mt-1 block font-semibold text-kraft-deep">
                   {f.pricing === "per_unit" ? `${formatPrice(f.price)} / ${f.unit_label}` : formatPrice(f.price)}
+                </span>
+                <span aria-hidden className="absolute -top-3 -right-2 hidden size-8 rotate-12 place-items-center rounded-full bg-violet text-white peer-checked:grid">
+                  <CheckIcon className="size-4" />
                 </span>
               </label>
             ))}
           </div>
         ) : null}
         {perUnit ? (
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-white p-4">
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[1.1rem] border-2 border-dashed border-kraft/60 bg-paper px-4 py-3.5">
             <div>
               <p className="font-semibold">Nombre de {format.unit_label}s dans la boîte</p>
-              <p className="text-sm text-muted">
-                {formatPrice(format.price)} l&apos;unité · minimum {range.min}
-              </p>
+              <p className="tabular text-sm text-kraft-deep">{formatPrice(format.price)} l&apos;unité</p>
             </div>
             <Stepper value={effectiveUnits ?? range.min} min={range.min} max={range.max} onChange={setUnits} label={`${format.unit_label}s par boîte`} />
           </div>
         ) : null}
       </fieldset>
 
-      {/* 2. Suppléments ------------------------------------------------- */}
+      {/* 2. Suppléments : des étiquettes kraft à accrocher à la boîte ---- */}
       {product.supplements.length ? (
         <fieldset>
-          <legend className="display flex items-center gap-2 text-xl">
-            <span className="grid size-7 place-items-center rounded-full bg-night text-sm text-white">2</span>
+          <StepLegend n={2} hint="facultatif">
             Des suppléments ?
-          </legend>
-          <p className="mt-1 text-sm text-muted">Facultatif · 500 FCFA chacun, appliqué à chaque boîte de cette sélection.</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {product.supplements.map((s) => {
+          </StepLegend>
+          <p className="mt-1 pl-14 text-sm text-muted">500 FCFA chacun, appliqué à chaque boîte de cette sélection.</p>
+          <div className="mt-4 flex flex-wrap gap-2.5">
+            {product.supplements.map((s, index) => {
               const on = selected.includes(s.id);
               return (
                 <button
@@ -115,11 +117,13 @@ export function ProductConfigurator({ product, availability, ordersOpen }: Props
                   type="button"
                   aria-pressed={on}
                   onClick={() => toggle(s.id)}
-                  className="inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-line bg-white px-4 text-[0.95rem] font-semibold transition hover:border-violet/50 aria-pressed:border-violet aria-pressed:bg-violet aria-pressed:text-white"
+                  className={`inline-flex min-h-11 items-center gap-2 rounded-lg border-2 border-dashed border-kraft/70 bg-paper px-3.5 text-[0.95rem] font-semibold transition hover:border-kraft-deep aria-pressed:border-solid aria-pressed:border-kraft aria-pressed:bg-kraft aria-pressed:shadow-[var(--shadow-soft)] ${
+                    index % 3 === 0 ? "aria-pressed:-rotate-2" : index % 3 === 1 ? "aria-pressed:rotate-1" : "aria-pressed:rotate-2"
+                  }`}
                 >
-                  {on ? <CheckIcon className="size-4" /> : <span aria-hidden className="text-violet">+</span>}
+                  {on ? <CheckIcon className="size-4" /> : <span aria-hidden className="text-kraft-deep">+</span>}
                   {s.name}
-                  <span className={`tabular text-xs ${on ? "text-white/80" : "text-muted"}`}>{formatPrice(s.price)}</span>
+                  <span className={`tabular text-xs ${on ? "text-night/75" : "text-muted"}`}>{formatPrice(s.price)}</span>
                 </button>
               );
             })}
@@ -129,58 +133,47 @@ export function ProductConfigurator({ product, availability, ordersOpen }: Props
 
       {/* 3. Nombre de boîtes ------------------------------------------- */}
       <fieldset>
-        <legend className="display flex items-center gap-2 text-xl">
-          <span className="grid size-7 place-items-center rounded-full bg-night text-sm text-white">{product.supplements.length ? 3 : 2}</span>
+        <StepLegend n={stepCount} last hint="même format, mêmes suppléments">
           Combien de boîtes identiques ?
-        </legend>
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+        </StepLegend>
+        <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3">
           <Stepper value={Math.min(boxes, maxBoxes)} min={1} max={Math.max(1, maxBoxes)} onChange={setBoxes} label="Nombre de boîtes" />
           {availability.orderable && availability.maxBoxes !== null ? (
-            <p className="text-sm font-semibold text-warning">Plus que {availability.maxBoxes} boîte{availability.maxBoxes > 1 ? "s" : ""} disponible{availability.maxBoxes > 1 ? "s" : ""}</p>
+            <p className="inline-flex -rotate-3 rounded-md border-2 border-warning/70 px-2.5 py-0.5 text-sm font-bold tracking-wide text-warning uppercase">
+              Plus que {availability.maxBoxes} boîte{availability.maxBoxes > 1 ? "s" : ""} disponible{availability.maxBoxes > 1 ? "s" : ""}
+            </p>
           ) : null}
         </div>
       </fieldset>
 
-      {/* Détail du prix ------------------------------------------------- */}
-      <div className="rounded-[1.4rem] border border-kraft/40 bg-paper p-5">
-        <dl className="tabular space-y-1.5 text-[0.95rem]">
-          <div className="flex justify-between gap-4">
-            <dt className="text-muted">{perUnit ? `${effectiveUnits} ${format.unit_label}s × ${formatPrice(format.price)}` : format.label}</dt>
-            <dd>{formatPrice(base)}</dd>
-          </div>
+      {/* Détail du prix, sur un ticket --------------------------------- */}
+      <Receipt title="Votre boîte" barcode={null} thanks={false} className="mx-auto max-w-md rotate-[0.6deg]">
+        <dl className="space-y-2 text-[0.95rem]">
+          <ReceiptLine label={perUnit ? `${effectiveUnits} ${format.unit_label}s × ${formatPrice(format.price)}` : format.label} value={formatPrice(base)} />
           {chosen.map((s) => (
-            <div key={s.id} className="flex justify-between gap-4">
-              <dt className="text-muted">+ {s.name}</dt>
-              <dd>{formatPrice(s.price)}</dd>
-            </div>
+            <ReceiptLine key={s.id} label={`+ ${s.name}`} value={formatPrice(s.price)} />
           ))}
-          <div className="flex justify-between gap-4 border-t border-dashed border-kraft/50 pt-2 font-semibold">
-            <dt>Prix d&apos;une boîte</dt>
-            <dd>{formatPrice(oneBox)}</dd>
-          </div>
-          <div className="flex items-baseline justify-between gap-4 pt-1">
-            <dt className="font-semibold">
-              Total · {boxes} boîte{boxes > 1 ? "s" : ""}
-            </dt>
-            <dd className="display text-[1.7rem] text-night">{formatPrice(oneBox * Math.min(boxes, maxBoxes))}</dd>
-          </div>
+          <ReceiptLine label={<span className="font-semibold">Prix d&apos;une boîte</span>} value={<span className="font-semibold">{formatPrice(oneBox)}</span>} />
+          <ReceiptTotal label={`Total · ${boxes} boîte${boxes > 1 ? "s" : ""}`} value={formatPrice(total)} />
         </dl>
-      </div>
+      </Receipt>
 
       {!availability.orderable ? (
-        <p className="rounded-2xl bg-night px-5 py-4 font-semibold text-white">
-          {availability.reason === "manual" ? "En rupture de stock pour le moment." : "Épuisé pour le moment."} Revenez bientôt !
+        <p className="flex items-center justify-center">
+          <span className="inline-flex -rotate-3 rounded-lg border-[3px] border-night px-4 py-2 text-center font-bold tracking-wide text-night uppercase">
+            {availability.reason === "manual" ? "En rupture de stock pour le moment." : "Épuisé pour le moment."} Revenez bientôt !
+          </span>
         </p>
       ) : !ordersOpen ? (
         <p className="rounded-2xl bg-warning-soft px-5 py-4 font-semibold text-warning">Les commandes en ligne sont momentanément fermées.</p>
       ) : null}
 
       {/* Barre d'action, fixée en bas sur téléphone ------------------------ */}
-      <div data-sticky-cta className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 px-4 py-3 backdrop-blur md:static md:border-0 md:bg-transparent md:p-0">
+      <div data-sticky-cta className="fixed inset-x-0 bottom-0 z-30 border-t-2 border-dashed border-kraft/50 bg-paper/95 px-4 py-3 backdrop-blur md:static md:border-0 md:bg-transparent md:p-0">
         <div className="mx-auto flex max-w-6xl items-center gap-3">
           <div className="md:hidden">
-            <p className="text-xs text-muted">Total</p>
-            <p className="display tabular text-xl">{formatPrice(oneBox * Math.min(boxes, maxBoxes))}</p>
+            <p className="hand text-lg leading-none text-kraft-deep">total</p>
+            <p className="display tabular text-xl">{formatPrice(total)}</p>
           </div>
           <button type="button" onClick={addToCart} disabled={!canOrder} className="btn-primary flex-1 md:w-full md:flex-none md:text-base">
             Ajouter au panier
@@ -189,15 +182,35 @@ export function ProductConfigurator({ product, availability, ordersOpen }: Props
       </div>
 
       {added ? (
-        <div role="status" className="rise flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-success-soft px-5 py-4 text-success">
-          <span className="flex items-center gap-2 font-semibold">
-            <Bang className="h-5 w-3 text-success" /> Ajouté au panier !
+        <div role="status" className="rise flex flex-wrap items-center justify-between gap-3 rounded-[1.1rem] border-2 border-dashed border-violet/40 bg-white px-5 py-4">
+          <span className="flex items-center gap-3">
+            <span className="inline-flex -rotate-6 rounded-md border-[3px] border-violet px-2 py-0.5 text-sm font-bold tracking-[0.18em] text-violet">C&apos;EST NOTÉ</span>
+            <span className="hand text-2xl text-violet">Ajouté au panier !</span>
           </span>
-          <Link href="/panier" className="font-semibold underline underline-offset-4">
-            Voir mon panier
+          <Link href="/panier" className="inline-flex items-center gap-1 font-semibold text-night underline decoration-lilac decoration-2 underline-offset-4 hover:decoration-violet">
+            Voir mon panier <ArrowIcon className="size-4" />
           </Link>
         </div>
       ) : null}
     </div>
+  );
+}
+
+/** Titre d'étape : numéro tamponné et indication manuscrite. */
+function StepLegend({ n, last = false, hint, children }: { n: number; last?: boolean; hint?: string; children: React.ReactNode }) {
+  return (
+    <legend className="flex w-full items-center gap-3">
+      <span
+        className={`display grid size-11 shrink-0 place-items-center rounded-full text-lg ${
+          last ? "bg-night text-white" : "-rotate-6 border-2 border-violet text-violet"
+        }`}
+      >
+        {n}
+      </span>
+      <span>
+        <span className="display block text-xl leading-tight">{children}</span>
+        {hint ? <span className="hand block text-lg leading-tight text-violet/80">{hint}</span> : null}
+      </span>
+    </legend>
   );
 }
