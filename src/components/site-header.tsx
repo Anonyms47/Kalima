@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -16,23 +15,12 @@ const NAV = [
   { href: "/contact", label: "Contact", hint: "WhatsApp, Instagram, retrait" },
 ];
 
-/** Raccourci produit affiché en haut du menu mobile. */
-export type MenuProduct = {
-  slug: string;
-  name: string;
-  image: string | null;
-  alt: string;
-  price: string;
-  orderable: boolean;
-};
-
 type Props = {
   signedIn: boolean;
   isStaff: boolean;
   whatsapp: string | null;
   instagram: string;
   hours: string;
-  products: MenuProduct[];
 };
 
 const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -49,7 +37,7 @@ function BurgerIcon({ open }: { open: boolean }) {
   );
 }
 
-export function SiteHeader({ signedIn, isStaff, whatsapp, instagram, hours, products }: Props) {
+export function SiteHeader({ signedIn, isStaff, whatsapp, instagram, hours }: Props) {
   const pathname = usePathname();
   const { count, ready, lastAdded } = useCart();
   const [open, setOpen] = useState(false);
@@ -212,59 +200,27 @@ export function SiteHeader({ signedIn, isStaff, whatsapp, instagram, hours, prod
         }`}
       >
         {/* La clé rejoue l'apparition échelonnée à chaque ouverture. */}
-        <nav key={openings} aria-label="Menu" className="mx-auto w-full max-w-xl flex-1 overflow-y-auto overscroll-contain px-4 pt-5 pb-6 sm:px-6">
-          {products.length ? (
-            <section aria-labelledby="menu-carte" className="rise">
-              <p id="menu-carte" className="eyebrow">
-                <Bang className="h-3.5 w-2 text-lilac" /> À la carte
-              </p>
-              <ul className="mt-3 grid grid-cols-2 gap-3">
-                {products.map((product) => (
-                  <li key={product.slug}>
-                    <Link
-                      href={`/gourmandises/${product.slug}`}
-                      onClick={() => setOpen(false)}
-                      className="group block overflow-hidden rounded-2xl border border-line bg-white transition hover:border-violet/40"
-                    >
-                      <span className="relative block aspect-[16/10] overflow-hidden bg-mist">
-                        {product.image ? (
-                          <Image src={product.image} alt={product.alt} fill sizes="50vw" className="object-cover object-[50%_62%] transition duration-500 group-hover:scale-[1.04]" />
-                        ) : null}
-                        {!product.orderable ? (
-                          <span className="absolute top-2 left-2 rounded-full bg-night px-2 py-0.5 text-[0.7rem] font-bold text-white">Épuisé</span>
-                        ) : null}
-                      </span>
-                      <span className="block px-3 py-2.5">
-                        <span className="display block text-lg leading-tight">{product.name}</span>
-                        <span className="text-sm font-semibold text-kraft-deep">{product.price}</span>
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
-
-          <ul className={`divide-y divide-line ${products.length ? "mt-6" : ""}`}>
+        <nav key={openings} aria-label="Menu" className="mx-auto w-full max-w-xl flex-1 overflow-y-auto overscroll-contain px-4 pt-3 pb-6 sm:px-6">
+          <ul className="divide-y divide-line">
             {NAV.map((item, index) => {
               const active = isActive(item.href);
               return (
-                <li key={item.href} className="rise" style={{ animationDelay: `${(index + 1) * 40}ms` }}>
+                <li key={item.href} className="rise" style={{ animationDelay: `${index * 40}ms` }}>
                   <Link
                     ref={index === 0 ? firstLink : undefined}
                     href={item.href}
                     onClick={() => setOpen(false)}
                     aria-current={active ? "page" : undefined}
-                    className="group flex items-center gap-4 py-3"
+                    className="group flex items-center gap-4 py-4 [@media(max-height:700px)]:py-2.5"
                   >
                     <span className="min-w-0 flex-1">
-                      <span className="display flex items-center gap-2 text-[1.3rem] leading-tight text-night group-aria-[current=page]:text-violet">
+                      <span className="display flex items-center gap-2 text-[1.7rem] leading-tight [@media(max-height:700px)]:text-[1.5rem] text-night group-aria-[current=page]:text-violet">
                         {item.label}
                         {active ? <Bang className="h-5 w-3 shrink-0 text-lilac" /> : null}
                       </span>
                       <span className="mt-0.5 block text-sm text-muted">{item.hint}</span>
                     </span>
-                    <span className="grid size-9 shrink-0 place-items-center rounded-full bg-mist text-violet transition group-hover:bg-lilac-soft group-hover:translate-x-0.5">
+                    <span className="grid size-10 shrink-0 place-items-center rounded-full bg-mist text-violet transition group-hover:translate-x-0.5 group-hover:bg-lilac-soft group-aria-[current=page]:bg-night group-aria-[current=page]:text-white">
                       <ArrowIcon className="size-4" />
                     </span>
                   </Link>
@@ -273,7 +229,7 @@ export function SiteHeader({ signedIn, isStaff, whatsapp, instagram, hours, prod
             })}
           </ul>
 
-          <div className="rise mt-5 flex flex-wrap gap-2" style={{ animationDelay: `${(NAV.length + 1) * 40}ms` }}>
+          <div className="rise mt-5 flex flex-wrap gap-2" style={{ animationDelay: `${NAV.length * 40}ms` }}>
             <Link href={signedIn ? "/compte" : "/connexion"} onClick={() => setOpen(false)} className="btn-ghost btn-sm">
               <UserIcon className="size-5" />
               {signedIn ? "Mon compte" : "Se connecter"}
