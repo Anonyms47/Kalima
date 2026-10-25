@@ -52,6 +52,7 @@ export function SettingsForm({ settings }: { settings: Settings }) {
               <Field id="contactEmail" label="E-mail de contact (facultatif)"><input id="contactEmail" name="contactEmail" type="email" defaultValue={settings.contact.email} className="field" /></Field>
               <Field id="hours" label="Horaires"><input id="hours" name="hours" defaultValue={settings.hours} className="field" /></Field>
               <Field id="pickupArea" label="Zone de retrait"><input id="pickupArea" name="pickupArea" defaultValue={settings.pickup.area} className="field" /></Field>
+              <Field id="pickupMapUrl" label="Lien Google Maps du lieu de retrait" hint="Dans Google Maps : Partager, puis Copier le lien. Affiché au client et dans l'e-mail « prête à retirer »."><input id="pickupMapUrl" name="pickupMapUrl" type="url" defaultValue={settings.pickup.map_url} placeholder="https://maps.app.goo.gl/…" className="field" /></Field>
               <Field id="pickupDetails" label="Instructions de retrait" hint="Adresse précise ou repère, affichés au client et dans l'e-mail « prête à retirer »."><input id="pickupDetails" name="pickupDetails" defaultValue={settings.pickup.details} className="field" /></Field>
             </div>
           </Panel>

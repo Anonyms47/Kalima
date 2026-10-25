@@ -134,7 +134,13 @@ export function SiteFooter({ settings }: { settings: Settings }) {
               <li className="flex items-start gap-3">
                 <PinIcon className="mt-0.5 size-5 shrink-0 text-lilac" />
                 <span>
-                  Retrait à {pickup.area}
+                  {pickup.map_url ? (
+                    <a href={pickup.map_url} target="_blank" rel="noopener noreferrer" className="underline decoration-lilac/60 decoration-2 underline-offset-4 transition hover:text-white hover:decoration-lilac">
+                      Retrait à {pickup.area}
+                    </a>
+                  ) : (
+                    <>Retrait à {pickup.area}</>
+                  )}
                   <span className="block text-sm text-cloud/60">Livraison convenue sur WhatsApp</span>
                 </span>
               </li>

@@ -134,6 +134,14 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/co
                 {order.fulfillment === "delivery"
                   ? "La livraison se convient sur WhatsApp. Elle n'est pas comprise dans le montant."
                   : `Retrait${settings.pickup.area ? ` à ${settings.pickup.area}` : ""} : le moment se convient sur WhatsApp.`}
+                {order.fulfillment === "pickup" && settings.pickup.map_url ? (
+                  <>
+                    {" "}
+                    <a href={settings.pickup.map_url} target="_blank" rel="noopener noreferrer" className="font-semibold text-violet underline decoration-lilac decoration-2 underline-offset-4">
+                      Voir le lieu sur Google Maps
+                    </a>
+                  </>
+                ) : null}
               </p>
             </div>
           </section>

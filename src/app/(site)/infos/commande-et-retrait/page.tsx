@@ -30,6 +30,15 @@ export default async function OrderInfoPage() {
         <p>
           {s.pickup.area ? `Le retrait se fait à ${s.pickup.area}. ` : ""}
           {s.pickup.details || "L'adresse exacte et le moment du retrait vous sont communiqués après votre commande."}
+          {s.pickup.map_url ? (
+            <>
+              {" "}
+              <a href={s.pickup.map_url} target="_blank" rel="noopener noreferrer">
+                Voir le lieu sur Google Maps
+              </a>
+              .
+            </>
+          ) : null}
         </p>
       </section>
       <section>

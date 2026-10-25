@@ -49,6 +49,7 @@ async function buildOrderEmailData(orderId: string, settings: Awaited<ReturnType
     items,
     pickupArea: settings.pickup.area,
     pickupDetails: settings.pickup.details,
+    pickupMapUrl: settings.pickup.map_url,
     giftMessage: order.gift_message,
   };
 }

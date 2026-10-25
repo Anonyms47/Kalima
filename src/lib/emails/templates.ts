@@ -40,6 +40,7 @@ export type OrderEmailData = {
   }[];
   pickupArea: string;
   pickupDetails: string;
+  pickupMapUrl?: string;
   giftMessage: string | null;
 };
 
@@ -161,7 +162,7 @@ function recapText(data: OrderEmailData) {
 
 function pickupText(data: OrderEmailData) {
   const where = data.pickupArea ? `Retrait à ${data.pickupArea}.` : "";
-  return [where, data.pickupDetails].filter(Boolean).join(" ");
+  return [where, data.pickupDetails, data.pickupMapUrl ? `Itinéraire : ${data.pickupMapUrl}` : ""].filter(Boolean).join(" ");
 }
 
 export type OrderEmailKind =

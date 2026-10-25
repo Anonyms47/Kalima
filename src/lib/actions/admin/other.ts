@@ -99,6 +99,8 @@ export async function saveSettingsAction(_prev: ActionResult, formData: FormData
   if (!Number.isInteger(minutes) || minutes < 15 || minutes > 7 * 24 * 60) return { error: "Durée de réservation : entre 15 minutes et 7 jours." };
   const contactEmail = text(formData, "contactEmail", 120);
   if (contactEmail && !EMAIL_PATTERN.test(contactEmail)) return { error: "L'e-mail de contact est invalide." };
+  const mapUrl = text(formData, "pickupMapUrl", 500);
+  if (mapUrl && !/^https:\/\/\S+$/.test(mapUrl)) return { error: "Le lien Google Maps doit commencer par https://" };
   const policy = formData.get("rewardPolicy") === "not_included" ? "not_included" : "undecided";
 
   const values: Partial<Settings> = {
@@ -110,7 +112,7 @@ export async function saveSettingsAction(_prev: ActionResult, formData: FormData
       email: contactEmail,
     },
     hours: text(formData, "hours", 120),
-    pickup: { area: text(formData, "pickupArea", 80), details: text(formData, "pickupDetails", 500) },
+    pickup: { area: text(formData, "pickupArea", 80), details: text(formData, "pickupDetails", 500), map_url: mapUrl },
     payment: { provider: "manual_link", link: paymentLink, label: text(formData, "paymentLabel", 60), instructions: text(formData, "paymentInstructions", 1000) },
     reservation_minutes: minutes,
     orders_open: formData.get("ordersOpen") === "on",

@@ -11,7 +11,7 @@ export type Settings = {
     email: string;
   };
   hours: string;
-  pickup: { area: string; details: string };
+  pickup: { area: string; details: string; map_url: string };
   payment: { provider: "manual_link"; link: string; label: string; instructions: string };
   reservation_minutes: number;
   orders_open: boolean;
@@ -28,7 +28,7 @@ export type Settings = {
 export const DEFAULT_SETTINGS: Settings = {
   contact: { phone: "", whatsapp_number: "", whatsapp_link: "", instagram: "", email: "" },
   hours: "",
-  pickup: { area: "", details: "" },
+  pickup: { area: "", details: "", map_url: "" },
   payment: { provider: "manual_link", link: "", label: "", instructions: "" },
   reservation_minutes: 120,
   orders_open: true,

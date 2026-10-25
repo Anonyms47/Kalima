@@ -117,6 +117,11 @@ export default async function ContactPage() {
                 <p className="hand mt-2 text-xl leading-snug text-violet">
                   {pickup.details || "l'adresse exacte vous est donnée après votre commande"}
                 </p>
+                {pickup.map_url ? (
+                  <a href={pickup.map_url} target="_blank" rel="noopener noreferrer" className={`mt-3 inline-flex items-center gap-1.5 ${link}`}>
+                    <PinIcon className="size-4" /> Voir sur Google Maps
+                  </a>
+                ) : null}
               </PaperCard>
             ) : null}
           </div>
