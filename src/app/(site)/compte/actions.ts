@@ -21,8 +21,13 @@ export async function updateProfileAction(_prev: ProfileState, formData: FormDat
   return { ok: true };
 }
 
-export async function activateAmbassadorAction() {
+export async function activateAmbassadorAction(formData: FormData) {
   const user = await requireUser("/compte/ambassadeur");
+  // Le code est construit à partir du prénom (KALI + prénom) : on l'enregistre d'abord s'il manque.
+  const firstName = String(formData.get("firstName") ?? "").trim().slice(0, 60);
+  if (firstName && firstName !== user.firstName) {
+    await sql`update users set first_name = ${firstName}, updated_at = now() where id = ${user.id}`;
+  }
   await activateAmbassador(user.id);
   redirect("/compte/ambassadeur");
 }

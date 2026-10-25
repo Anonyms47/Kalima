@@ -241,7 +241,7 @@ try {
     await page.getByRole("button", { name: "Obtenir mon code" }).click();
     await page.getByText("Mon code personnel").waitFor();
     const code = (await page.locator("p.display.tabular").first().textContent())!.trim();
-    assert.match(code, /^K[A-Z0-9]{6}$/);
+    assert.match(code, /^KALI[A-Z]{2,6}\d{0,2}$/);
     await shot(page, "11-espace-ambassadeur");
     ok(`Espace ambassadeur : code ${code} attribué, progression affichée`);
   }

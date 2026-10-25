@@ -1,16 +1,19 @@
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { getCurrentUser } from "@/lib/server/auth";
+import { getAmbassadorCode } from "@/lib/server/referrals";
 import { getSettings } from "@/lib/server/settings";
 import { whatsappUrl } from "@/lib/whatsapp";
 
 export default async function SiteLayout({ children }: LayoutProps<"/">) {
   const [user, settings] = await Promise.all([getCurrentUser(), getSettings()]);
+  const ambassadorCode = user ? await getAmbassadorCode(user.id) : null;
   return (
     <>
       <SiteHeader
         signedIn={Boolean(user)}
         isStaff={Boolean(user?.staff)}
+        ambassadorCode={ambassadorCode}
         whatsapp={settings.contact.whatsapp_link || whatsappUrl(settings.contact.whatsapp_number)}
         instagram={settings.contact.instagram}
         hours={settings.hours}

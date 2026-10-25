@@ -19,6 +19,8 @@ const NAV = [
 type Props = {
   signedIn: boolean;
   isStaff: boolean;
+  /** Code de l'ambassadeur connecté : un petit tampon « K! » s'affiche sur l'icône du compte. */
+  ambassadorCode?: string | null;
   whatsapp: string | null;
   instagram: string;
   hours: string;
@@ -38,7 +40,7 @@ function BurgerIcon({ open }: { open: boolean }) {
   );
 }
 
-export function SiteHeader({ signedIn, isStaff, whatsapp, instagram, hours }: Props) {
+export function SiteHeader({ signedIn, isStaff, ambassadorCode, whatsapp, instagram, hours }: Props) {
   const pathname = usePathname();
   const { count, ready, lastAdded } = useCart();
   const [open, setOpen] = useState(false);
@@ -151,10 +153,15 @@ export function SiteHeader({ signedIn, isStaff, whatsapp, instagram, hours }: Pr
           <Link
             href={signedIn ? "/compte" : "/connexion"}
             aria-current={isActive("/compte") || isActive("/connexion") ? "page" : undefined}
-            className="grid size-11 place-items-center rounded-full text-night transition hover:bg-mist aria-[current=page]:bg-mist"
-            aria-label={signedIn ? "Mon compte" : "Se connecter"}
+            className="relative grid size-11 place-items-center rounded-full text-night transition hover:bg-mist aria-[current=page]:bg-mist"
+            aria-label={signedIn ? (ambassadorCode ? `Mon compte, ambassadeur ${ambassadorCode}` : "Mon compte") : "Se connecter"}
           >
             <UserIcon />
+            {ambassadorCode ? (
+              <span aria-hidden title="Ambassadeur KALIMA" className="hand absolute -top-0.5 -right-1 grid size-5 rotate-12 place-items-center rounded-full border-2 border-violet bg-lilac text-[0.7rem] leading-none text-violet">
+                K!
+              </span>
+            ) : null}
           </Link>
           <Link
             href="/panier"
@@ -240,6 +247,15 @@ export function SiteHeader({ signedIn, isStaff, whatsapp, instagram, hours }: Pr
               <UserIcon className="size-5" />
               {signedIn ? "Mon compte" : "Se connecter"}
             </Link>
+            {ambassadorCode ? (
+              <>
+                <Bang className="h-4 w-2.5 text-lilac" />
+                <Link href="/compte/ambassadeur" onClick={() => setOpen(false)} className="inline-flex items-center gap-1.5 text-night underline decoration-lilac decoration-2 underline-offset-4">
+                  <span aria-hidden className="hand grid size-5 rotate-12 place-items-center rounded-full border-2 border-violet bg-lilac text-[0.7rem] leading-none text-violet">K!</span>
+                  Ambassadeur {ambassadorCode}
+                </Link>
+              </>
+            ) : null}
             {isStaff ? (
               <>
                 <Bang className="h-4 w-2.5 text-lilac" />

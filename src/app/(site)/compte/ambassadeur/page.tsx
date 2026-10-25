@@ -11,6 +11,7 @@ import { requireUser } from "@/lib/server/auth";
 import { getAmbassadorOverview, REFERRALS_PER_REWARD } from "@/lib/server/referrals";
 import { getSettings } from "@/lib/server/settings";
 import { activateAmbassadorAction } from "../actions";
+import { BadgeShare } from "./badge-share";
 
 export const metadata: Metadata = { title: "Espace ambassadeur" };
 
@@ -34,8 +35,11 @@ export default async function AmbassadorPage() {
           <p className="mt-4 text-lg leading-relaxed text-night/75">
             Recevez un code personnel à partager. Chaque fois que cinq nouveaux clients ont été servis grâce à vous, une box individuelle de votre choix vous est offerte.
           </p>
-          <form action={activateAmbassadorAction} className="mt-8">
-            <button type="submit" className="kraft-label">Obtenir mon code</button>
+          <form action={activateAmbassadorAction} className="mt-8 max-w-sm">
+            <label htmlFor="firstName" className="field-label">Votre prénom</label>
+            <input id="firstName" name="firstName" required maxLength={60} autoComplete="given-name" defaultValue={user.firstName ?? ""} className="field" />
+            <p className="hand mt-1.5 text-lg text-violet">votre code : KALI + votre prénom</p>
+            <button type="submit" className="kraft-label mt-6">Obtenir mon code</button>
           </form>
           <p className="mt-6 text-sm text-muted">
             <Link href="/ambassadeurs" className="font-semibold text-violet underline decoration-lilac decoration-2 underline-offset-4">Lire le règlement du programme</Link>
@@ -90,6 +94,14 @@ export default async function AmbassadorPage() {
           <p className="mt-2 text-sm text-muted">Chaque personne ne compte qu&apos;une fois.</p>
         </section>
       </div>
+
+      <section className="mt-14" aria-labelledby="mon-badge">
+        <p className="hand -rotate-1 text-2xl text-violet">ambassadeur officiel</p>
+        <h2 id="mon-badge" className="display text-3xl">Mon badge</h2>
+        <div className="mt-6">
+          <BadgeShare code={overview.code} shareText={shareText} />
+        </div>
+      </section>
 
       <section className="mt-14" aria-labelledby="recompenses">
         <h2 id="recompenses" className="display text-3xl">Mes box offertes</h2>

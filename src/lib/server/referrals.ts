@@ -17,13 +17,43 @@ function randomCode(length = 6) {
   return code;
 }
 
+/** Prénom réduit à des lettres majuscules sans accent : « Aïssatou » → « AISSAT ». */
+export function codeName(firstName: string | null | undefined) {
+  const word = (firstName ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().split(/[^A-Z]+/).find((w) => w.length >= 2);
+  return word ? word.slice(0, 6) : "";
+}
+
+/**
+ * Code ambassadeur personnel : KALI + prénom (KALIAWA). Plusieurs personnes
+ * peuvent porter le même prénom : on ajoute alors le plus petit numéro libre
+ * (KALIAWA2, KALIAWA3…). Sans prénom exploitable, code aléatoire (K + 6 caractères).
+ */
+async function nextCodeCandidate(base: string) {
+  const taken = new Set(
+    (await sql<{ code: string }[]>`select code from ambassadors where code like ${`${base}%`}`).map((r) => r.code),
+  );
+  if (!taken.has(base)) return base;
+  for (let n = 2; n < 100; n++) if (!taken.has(`${base}${n}`)) return `${base}${n}`;
+  return null;
+}
+
+/** Code de l'ambassadeur actif (ou null). */
+export async function getAmbassadorCode(userId: string) {
+  const [row] = await sql<{ code: string }[]>`select code from ambassadors where user_id = ${userId} and active`;
+  return row?.code ?? null;
+}
+
 /** Active le profil ambassadeur et attribue un code unique (idempotent). */
 export async function activateAmbassador(userId: string) {
   const [existing] = await sql<{ code: string }[]>`select code from ambassadors where user_id = ${userId}`;
   if (existing) return existing.code;
+  const [user] = await sql<{ first_name: string | null }[]>`select first_name from users where id = ${userId}`;
+  const name = codeName(user?.first_name);
   for (let attempt = 0; attempt < 8; attempt++) {
+    // Une collision (deux activations simultanées) fait simplement passer au numéro suivant.
+    const candidate = (name && (await nextCodeCandidate(`KALI${name}`))) || `K${randomCode(6)}`;
     const [row] = await sql<{ code: string }[]>`
-      insert into ambassadors (user_id, code) values (${userId}, ${`K${randomCode(6)}`})
+      insert into ambassadors (user_id, code) values (${userId}, ${candidate})
       on conflict do nothing returning code`;
     if (row) {
       await audit(sql, { userId, label: "Client" }, "ambassador.activated", "ambassador", userId, { code: row.code });

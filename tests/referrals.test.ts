@@ -41,7 +41,7 @@ describe("programme ambassadeur", () => {
   it("attribue un code unique et stable", async () => {
     const amb = await makeUser("amb");
     const code = await activateAmbassador(amb.id);
-    expect(code).toMatch(/^K[A-Z0-9]{6}$/);
+    expect(code).toMatch(/^KALITEST\d{0,2}$/); // prénom « Test » des comptes de test
     expect(await activateAmbassador(amb.id)).toBe(code);
   });
 
@@ -144,5 +144,28 @@ describe("programme ambassadeur", () => {
     const overview = JSON.stringify(await getAmbassadorOverview(amb.id));
     expect(overview).not.toContain(filleul.email);
     expect(overview).not.toContain("Awa");
+  });
+});
+
+describe("code ambassadeur", () => {
+  it("donne KALI + prénom, puis un numéro quand le prénom est déjà pris", async () => {
+    const names = ["Ndèye-Fatou", "Ndeye", "Aïssatou Diop"];
+    const codes: string[] = [];
+    for (const name of [...names, "Ndèye"]) {
+      const user = await makeUser("code");
+      await sql`update users set first_name = ${name} where id = ${user.id}`;
+      codes.push(await activateAmbassador(user.id));
+    }
+    expect(codes[0]).toMatch(/^KALINDEYE\d*$/);
+    expect(codes[1]).toBe(`KALINDEYE${Number(codes[0].slice(9) || 1) + 1}`);
+    expect(codes[2]).toMatch(/^KALIAISSAT\d*$/);
+    expect(new Set(codes).size).toBe(codes.length);
+    for (const code of codes) expect(code).toMatch(/^[A-Z0-9]{4,12}$/);
+  });
+
+  it("sans prénom exploitable, attribue un code aléatoire", async () => {
+    const user = await makeUser("sansnom");
+    await sql`update users set first_name = null where id = ${user.id}`;
+    expect(await activateAmbassador(user.id)).toMatch(/^K[A-Z0-9]{6}$/);
   });
 });

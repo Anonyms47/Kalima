@@ -10,6 +10,10 @@ const nextConfig: NextConfig = {
       ? [{ protocol: "https", hostname: process.env.STORAGE_PUBLIC_HOST }]
       : [],
   },
+  // Polices et logo lus sur le disque pour générer les badges ambassadeur.
+  outputFileTracingIncludes: {
+    "/p/[code]/badge": ["./assets/fonts/**", "./public/brand/logo-kalima.png"],
+  },
   experimental: {
     serverActions: { bodySizeLimit: "8mb" },
   },
