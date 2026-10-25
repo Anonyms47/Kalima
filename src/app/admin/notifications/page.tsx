@@ -11,7 +11,7 @@ export default async function AdminNotifications() {
   const rows = await listNotifications();
   return (
     <>
-      <AdminHeader title="E-mails" subtitle={`Service d'envoi : ${emailProviderLabel()}. « Accepté » signifie que le service a pris l'e-mail en charge.`} />
+      <AdminHeader kicker="ce qui est parti (ou pas)" title="E-mails" subtitle={`Service d'envoi : ${emailProviderLabel()}. « Accepté » signifie que le service a pris l'e-mail en charge.`} />
       {rows.length === 0 ? <EmptyState>Aucun e-mail pour le moment.</EmptyState> : <Panel><NotificationList rows={rows} showOrder /></Panel>}
     </>
   );

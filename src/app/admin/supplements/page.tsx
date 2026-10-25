@@ -10,7 +10,7 @@ export default async function AdminSupplements() {
   const supplements = await listSupplements();
   return (
     <>
-      <AdminHeader title="Suppléments" subtitle="Prix appliqué à chaque boîte. Choisissez sur chaque fiche produit les suppléments proposés." />
+      <AdminHeader kicker="caramel, chantilly & cie" title="Suppléments" subtitle="Prix appliqué à chaque boîte. Choisissez sur chaque fiche produit les suppléments proposés." />
       <SupplementForms supplements={supplements} />
     </>
   );

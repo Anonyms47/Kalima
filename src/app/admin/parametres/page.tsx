@@ -13,7 +13,7 @@ export default async function AdminSettings() {
   const storage = storageMode();
   return (
     <>
-      <AdminHeader title="Paramètres" />
+      <AdminHeader kicker="les réglages de la boutique" title="Paramètres" />
       <Panel title="Services techniques" className="mb-5">
         <ul className="space-y-2 text-sm">
           <li className="flex flex-wrap items-center justify-between gap-2">E-mails <Pill tone={emailProviderLabel() === "Brevo" ? "success" : "warning"}>{emailProviderLabel()}</Pill></li>

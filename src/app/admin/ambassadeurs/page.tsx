@@ -10,7 +10,7 @@ export default async function AdminAmbassadors() {
   const rows = await listAmbassadors();
   return (
     <>
-      <AdminHeader title="Ambassadeurs" subtitle="5 filleuls validés = 1 box individuelle. Les box demandées apparaissent dans « Paiements à vérifier » des commandes." />
+      <AdminHeader kicker="le programme ambassadeur" title="Ambassadeurs" subtitle="5 filleuls validés = 1 box individuelle. Les box demandées apparaissent dans « Paiements à vérifier » des commandes." />
       {rows.length === 0 ? (
         <EmptyState>Aucun ambassadeur pour le moment.</EmptyState>
       ) : (

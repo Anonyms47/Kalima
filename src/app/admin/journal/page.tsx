@@ -50,7 +50,7 @@ export default async function AdminJournal() {
   const rows = await listAudit(300);
   return (
     <>
-      <AdminHeader title="Journal" subtitle="Les 300 dernières actions, conservées pour garder une trace." />
+      <AdminHeader kicker="qui a fait quoi" title="Journal" subtitle="Les 300 dernières actions, conservées pour garder une trace." />
       <Panel>
         <ul className="divide-y divide-line">
           {rows.map((r) => (

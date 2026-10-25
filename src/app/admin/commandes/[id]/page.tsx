@@ -9,10 +9,14 @@ import { requireStaff } from "@/lib/server/auth";
 import { getOrderById } from "@/lib/server/order-queries";
 import { toWhatsappNumber, whatsappUrl } from "@/lib/whatsapp";
 import { NotificationList } from "../../_components/notification-list";
+import { OrderProgress } from "../../_components/order-progress";
 import { AdminHeader, Panel, Pill } from "../../_components/ui";
 import { OrderActions } from "./order-actions";
 
 export const metadata = { title: "Commande" };
+
+// Commandes sur lesquelles l'équipe a encore une étape à franchir.
+const ACTIVE = new Set(["awaiting_payment", "reward_requested", "confirmed", "in_production", "out_for_delivery", "ready_for_pickup"]);
 
 export default async function AdminOrderPage({ params }: PageProps<"/admin/commandes/[id]">) {
   await requireStaff();
@@ -27,6 +31,7 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/comma
     <>
       <AdminHeader
         back={{ href: "/admin/commandes", label: "Commandes" }}
+        kicker={`la commande de ${firstName}`}
         title={order.reference}
         subtitle={<span>Passée le {formatDate(order.created_at)} · {order.fulfillment === "delivery" ? "Livraison" : "Retrait"}</span>}
         actions={
@@ -36,11 +41,14 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/comma
           </>
         }
       />
-      <div className="grid gap-5 xl:grid-cols-[1.2fr_1fr]">
-        <div className="space-y-5">
-          <Panel title="Prochaine étape">
+      <div className="mb-8 rounded-[1.3rem] border-2 border-dashed border-kraft/45 bg-paper px-3 py-4 sm:px-5">
+        <OrderProgress status={order.status} fulfillment={order.fulfillment} reached={order.events.map((e) => e.to_status)} />
+      </div>
+      <div className="grid gap-6 xl:grid-cols-[1.2fr_1fr]">
+        <div className="space-y-6">
+          <Panel title="Prochaine étape" hint={ACTIVE.has(order.status) ? "à faire maintenant" : "si besoin"} focus={ACTIVE.has(order.status)}>
             {order.payment_declared_at && order.status === "awaiting_payment" ? (
-              <p className="mb-4 rounded-xl bg-danger-soft px-4 py-3 text-sm font-semibold text-danger">
+              <p className="mb-4 rounded-xl border-2 border-danger/30 bg-danger-soft px-4 py-3 text-sm font-semibold text-danger">
                 Le client a signalé son paiement le {formatDate(order.payment_declared_at)}. Vérifiez sa réception avant de confirmer.
               </p>
             ) : null}
@@ -106,7 +114,7 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/comma
           ) : null}
         </div>
 
-        <div className="space-y-5">
+        <div className="space-y-6">
           <Panel title="Client">
             <dl className="space-y-2 text-sm">
               <div><dt className="text-muted">Nom</dt><dd className="font-semibold">{order.customer_name}</dd></div>
@@ -130,7 +138,8 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/comma
           <Panel title="Historique">
             <ol className="space-y-3 text-sm">
               {order.events.map((e) => (
-                <li key={e.id} className="border-l-2 border-lilac pl-3">
+                <li key={e.id} className="relative border-l-2 border-dotted border-kraft/60 pl-4">
+                  <span aria-hidden className="absolute top-1.5 -left-[5px] size-2 rounded-full bg-violet" />
                   <p className="font-semibold">{e.from_status === e.to_status ? "Note" : STATUS_LABELS[e.to_status]}</p>
                   <p className="text-muted">{formatDate(e.created_at)} · {e.actor_label}</p>
                   {e.note ? <p className="mt-0.5">{e.note}</p> : null}

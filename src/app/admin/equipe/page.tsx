@@ -13,7 +13,7 @@ export default async function AdminTeam() {
   const isOwner = me.staff.role === "owner";
   return (
     <>
-      <AdminHeader title="Équipe" subtitle="Accès nominatifs. Chaque personne se connecte avec un code reçu sur son e-mail." />
+      <AdminHeader kicker="les accès" title="Équipe" subtitle="Accès nominatifs. Chaque personne se connecte avec un code reçu sur son e-mail." />
       <Panel>
         <ul className="divide-y divide-line">
           {members.map((m) => (

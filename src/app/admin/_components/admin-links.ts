@@ -7,11 +7,11 @@ export const ADMIN_LINKS = [
 ];
 
 export const SECONDARY_LINKS = [
-  { href: "/admin/ambassadeurs", label: "Ambassadeurs" },
-  { href: "/admin/supplements", label: "Suppléments" },
-  { href: "/admin/notifications", label: "E-mails" },
-  { href: "/admin/journal", label: "Journal" },
-  { href: "/admin/parametres", label: "Paramètres" },
-  { href: "/admin/equipe", label: "Équipe" },
+  { href: "/admin/ambassadeurs", label: "Ambassadeurs", hint: "filleuls et box offertes" },
+  { href: "/admin/supplements", label: "Suppléments", hint: "caramel, chantilly…" },
+  { href: "/admin/notifications", label: "E-mails", hint: "ce qui est parti (ou pas)" },
+  { href: "/admin/journal", label: "Journal", hint: "qui a fait quoi" },
+  { href: "/admin/parametres", label: "Paramètres", hint: "paiement, horaires, contact" },
+  { href: "/admin/equipe", label: "Équipe", hint: "les accès" },
 ];
 
