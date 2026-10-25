@@ -1,80 +1,177 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { requestCodeAction, verifyCodeAction, type LoginState } from "@/lib/actions/auth";
+import { ArrowIcon, BackIcon } from "./icons";
 
 const initial: LoginState = { step: "email", email: "" };
+const CODE_LENGTH = 6;
+const RESEND_DELAY = 30;
 
-export function LoginForm({ next = "/compte", submitLabel = "Recevoir mon code" }: { next?: string; submitLabel?: string }) {
-  const [emailState, requestCode, requesting] = useActionState(requestCodeAction, initial);
-  const [codeState, verifyCode, verifying] = useActionState(verifyCodeAction, initial);
+/** Six cases pour le code, portées par un seul champ (saisie, collage et remplissage automatique). */
+function CodeInput({ invalid, describedBy, onComplete }: { invalid: boolean; describedBy?: string; onComplete: () => void }) {
+  const [value, setValue] = useState("");
+  const [focused, setFocused] = useState(true);
+  return (
+    <div className="relative">
+      <div aria-hidden className="grid grid-cols-6 gap-2 sm:gap-2.5">
+        {Array.from({ length: CODE_LENGTH }, (_, i) => {
+          const current = focused && (i === value.length || (i === CODE_LENGTH - 1 && value.length === CODE_LENGTH));
+          return (
+            <span
+              key={i}
+              className={`display grid aspect-[4/5] place-items-center rounded-2xl border-2 bg-white text-3xl transition ${
+                invalid ? "border-danger/60" : current ? "border-violet ring-4 ring-lilac/50" : value[i] ? "border-night/25" : "border-line"
+              }`}
+            >
+              {value[i] ?? (current ? <span className="h-7 w-0.5 animate-pulse rounded-full bg-violet" /> : null)}
+            </span>
+          );
+        })}
+      </div>
+      <input
+        id="code"
+        name="code"
+        inputMode="numeric"
+        autoComplete="one-time-code"
+        pattern="[0-9]*"
+        required
+        autoFocus
+        value={value}
+        onChange={(event) => {
+          // Pas de maxLength : un collage « Code : 123456 » doit arriver entier avant d'être filtré.
+          const digits = event.target.value.replace(/\D/g, "").slice(0, CODE_LENGTH);
+          setValue(digits);
+          if (digits.length === CODE_LENGTH) onComplete();
+        }}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        aria-invalid={invalid}
+        aria-describedby={describedBy}
+        className="absolute inset-0 h-full w-full cursor-text text-transparent caret-transparent opacity-0 selection:bg-transparent"
+      />
+    </div>
+  );
+}
 
-  // Après l'envoi du code, l'état de vérification prend le relais.
-  const onCodeStep = emailState.step === "code";
-  const state = codeState.email ? codeState : emailState;
-  const email = codeState.email || emailState.email;
+function Steps({ current }: { current: 1 | 2 }) {
+  return (
+    <ol className="mb-6 flex items-center gap-2 text-xs font-bold tracking-[0.12em] uppercase" aria-label={`Étape ${current} sur 2`}>
+      <li className={current === 1 ? "text-violet" : "text-muted"}>1. E-mail</li>
+      <li aria-hidden className="h-px w-6 bg-line" />
+      <li className={current === 2 ? "text-violet" : "text-muted"}>2. Code</li>
+    </ol>
+  );
+}
 
-  if (!onCodeStep) {
-    return (
-      <form action={requestCode} className="space-y-4" noValidate>
-        <div>
-          <label htmlFor="email" className="field-label">Adresse e-mail</label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            inputMode="email"
-            autoComplete="email"
-            required
-            defaultValue={emailState.email}
-            className="field"
-            placeholder="vous@exemple.com"
-            aria-invalid={Boolean(emailState.error)}
-            aria-describedby={emailState.error ? "email-error" : "email-hint"}
-          />
-          <p id="email-hint" className="field-hint">Nous vous envoyons un code : pas de mot de passe à retenir.</p>
-        </div>
-        {emailState.error ? (
-          <p id="email-error" role="alert" className="rounded-xl bg-danger-soft px-4 py-3 text-sm font-medium text-danger">{emailState.error}</p>
-        ) : null}
-        <button type="submit" disabled={requesting} className="btn-primary w-full">
-          {requesting ? "Envoi du code…" : submitLabel}
-        </button>
-      </form>
-    );
+/** Étape du code : remontée à chaque nouvel envoi depuis le premier formulaire. */
+function CodeStep({ email, next, onEdit }: { email: string; next: string; onEdit: () => void }) {
+  const [state, verifyCode, verifying] = useActionState(verifyCodeAction, { step: "code", email } as LoginState);
+  const form = useRef<HTMLFormElement>(null);
+
+  // Un nouveau code ne peut être redemandé qu'après un court délai.
+  const [cooldown, setCooldown] = useState(RESEND_DELAY);
+  const [lastSent, setLastSent] = useState(state.sentAt);
+  if (state.sentAt !== lastSent) {
+    setLastSent(state.sentAt);
+    setCooldown(RESEND_DELAY);
   }
+  const counting = cooldown > 0;
+  useEffect(() => {
+    if (!counting) return;
+    const timer = window.setInterval(() => setCooldown((s) => Math.max(0, s - 1)), 1000);
+    return () => window.clearInterval(timer);
+  }, [counting]);
 
   return (
-    <form action={verifyCode} className="space-y-4" noValidate>
+    <form ref={form} action={verifyCode} className="space-y-5" noValidate>
+      <Steps current={2} />
       <input type="hidden" name="email" value={email} />
       <input type="hidden" name="next" value={next} />
-      {state.info && !state.error ? <p role="status" className="rounded-xl bg-success-soft px-4 py-3 text-sm font-medium text-success">{state.info}</p> : null}
       <div>
-        <label htmlFor="code" className="field-label">Code reçu par e-mail</label>
-        <input
-          id="code"
-          name="code"
-          inputMode="numeric"
-          autoComplete="one-time-code"
-          pattern="[0-9]*"
-          maxLength={6}
-          required
-          autoFocus
-          className="field tabular text-center text-2xl tracking-[0.5em]"
-          placeholder="••••••"
-          aria-invalid={Boolean(state.error)}
-          aria-describedby={state.error ? "code-error" : undefined}
-        />
-        <p className="field-hint">Valable 10 minutes. Pensez à vérifier vos courriers indésirables.</p>
+        <label htmlFor="code" className="display block text-2xl">Entrez le code reçu</label>
+        <p className="mt-1.5 text-sm text-muted">
+          Envoyé à <strong className="text-night [overflow-wrap:anywhere]">{email}</strong>{" "}
+          <button type="button" onClick={onEdit} className="inline-flex items-center gap-1 font-semibold whitespace-nowrap text-violet hover:underline">
+            <BackIcon className="size-3.5" /> Modifier
+          </button>
+        </p>
       </div>
+      <CodeInput
+        key={`${state.error ?? ""}|${state.sentAt ?? ""}`}
+        invalid={Boolean(state.error)}
+        describedBy={state.error ? "code-error code-hint" : "code-hint"}
+        onComplete={() => window.setTimeout(() => form.current?.requestSubmit(), 120)}
+      />
+      <p id="code-hint" className="text-sm text-muted">Valable 10 minutes. Pensez à regarder dans les courriers indésirables.</p>
       {state.error ? (
         <p id="code-error" role="alert" className="rounded-xl bg-danger-soft px-4 py-3 text-sm font-medium text-danger">{state.error}</p>
+      ) : state.info ? (
+        <p role="status" className="rounded-xl bg-success-soft px-4 py-3 text-sm font-medium text-success">{state.info}</p>
       ) : null}
       <button type="submit" name="intent" value="verify" disabled={verifying} className="btn-primary w-full">
         {verifying ? "Vérification…" : "Me connecter"}
       </button>
-      <button type="submit" name="intent" value="resend" formNoValidate disabled={verifying} className="w-full text-sm font-semibold text-violet hover:underline">
-        Renvoyer un code à {email}
+      <p className="text-center text-sm text-muted">
+        Rien reçu ?{" "}
+        <button
+          type="submit"
+          name="intent"
+          value="resend"
+          formNoValidate
+          disabled={verifying || counting}
+          className="font-semibold text-violet hover:underline disabled:cursor-not-allowed disabled:text-muted disabled:no-underline"
+        >
+          {counting ? `Renvoyer un code dans ${cooldown} s` : "Renvoyer un code"}
+        </button>
+      </p>
+    </form>
+  );
+}
+
+export function LoginForm({ next = "/compte", submitLabel = "Recevoir mon code" }: { next?: string; submitLabel?: string }) {
+  const [emailState, requestCode, requesting] = useActionState(requestCodeAction, initial);
+  // « Modifier l'adresse » ramène au premier formulaire, adresse préremplie.
+  const [editing, setEditing] = useState(false);
+  const [seenSentAt, setSeenSentAt] = useState(emailState.sentAt);
+  if (emailState.sentAt !== seenSentAt) {
+    setSeenSentAt(emailState.sentAt);
+    setEditing(false);
+  }
+
+  if (emailState.step === "code" && !editing) {
+    return <CodeStep key={emailState.sentAt} email={emailState.email} next={next} onEdit={() => setEditing(true)} />;
+  }
+
+  return (
+    <form action={requestCode} className="space-y-4" noValidate>
+      <Steps current={1} />
+      <div>
+        <label htmlFor="email" className="field-label">Votre adresse e-mail</label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          autoCapitalize="none"
+          spellCheck={false}
+          required
+          autoFocus={editing}
+          defaultValue={emailState.email}
+          className="field text-lg"
+          placeholder="vous@exemple.com"
+          aria-invalid={Boolean(emailState.error)}
+          aria-describedby={emailState.error ? "email-error" : "email-hint"}
+        />
+        <p id="email-hint" className="field-hint">Nous vous envoyons un code à 6 chiffres : pas de mot de passe à retenir.</p>
+      </div>
+      {emailState.error ? (
+        <p id="email-error" role="alert" className="rounded-xl bg-danger-soft px-4 py-3 text-sm font-medium text-danger">{emailState.error}</p>
+      ) : null}
+      <button type="submit" disabled={requesting} className="btn-primary w-full">
+        {requesting ? "Envoi du code…" : submitLabel}
+        {requesting ? null : <ArrowIcon />}
       </button>
     </form>
   );

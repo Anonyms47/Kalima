@@ -42,9 +42,9 @@ async function login(page: Page, email: string, next = "/compte") {
   await page.goto(`${BASE}/connexion?suite=${encodeURIComponent(next)}`);
   await page.getByLabel("Adresse e-mail").fill(email);
   await page.getByRole("button", { name: "Recevoir mon code" }).click();
-  await page.getByLabel("Code reçu par e-mail").waitFor();
-  await page.getByLabel("Code reçu par e-mail").fill(await latestCode(email));
-  await page.getByRole("button", { name: "Me connecter" }).click();
+  await page.getByLabel("Entrez le code reçu").waitFor();
+  // Le formulaire se valide seul au 6e chiffre.
+  await page.getByLabel("Entrez le code reçu").fill(await latestCode(email));
   await page.waitForURL((url) => url.pathname === next);
 }
 
@@ -94,12 +94,10 @@ try {
     await page.waitForURL(`${BASE}/commande`);
     await page.getByLabel("Adresse e-mail").fill(customer);
     await page.getByRole("button", { name: "Continuer" }).click();
-    await page.getByLabel("Code reçu par e-mail").fill("000000");
-    await page.getByRole("button", { name: "Me connecter" }).click();
+    await page.getByLabel("Entrez le code reçu").fill("000000");
     await page.getByText("Code incorrect.").waitFor();
     ok("Connexion : un code erroné est refusé");
-    await page.getByLabel("Code reçu par e-mail").fill(await latestCode(customer));
-    await page.getByRole("button", { name: "Me connecter" }).click();
+    await page.getByLabel("Entrez le code reçu").fill(await latestCode(customer));
     await page.getByRole("heading", { name: "Vos informations" }).waitFor();
 
     await page.getByLabel("Nom", { exact: true }).fill("Awa Test");

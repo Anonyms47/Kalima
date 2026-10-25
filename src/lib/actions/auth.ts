@@ -3,13 +3,13 @@
 import { redirect } from "next/navigation";
 import { requestLoginCode, safeNext, signOut, verifyLoginCode } from "@/lib/server/auth";
 
-export type LoginState = { step: "email" | "code"; email: string; error?: string; info?: string };
+export type LoginState = { step: "email" | "code"; email: string; error?: string; info?: string; sentAt?: number };
 
 export async function requestCodeAction(_prev: LoginState, formData: FormData): Promise<LoginState> {
   const email = String(formData.get("email") ?? "").trim();
   const result = await requestLoginCode(email);
   if (!result.ok) return { step: "email", email, error: result.error };
-  return { step: "code", email: email.toLowerCase(), info: `Un code à 6 chiffres vient d'être envoyé à ${email.toLowerCase()}.` };
+  return { step: "code", email: email.toLowerCase(), info: `Un code à 6 chiffres vient d'être envoyé à ${email.toLowerCase()}.`, sentAt: Date.now() };
 }
 
 export async function verifyCodeAction(_prev: LoginState, formData: FormData): Promise<LoginState> {
@@ -19,7 +19,7 @@ export async function verifyCodeAction(_prev: LoginState, formData: FormData): P
   if (formData.get("intent") === "resend") {
     const result = await requestLoginCode(email);
     return result.ok
-      ? { step: "code", email, info: "Un nouveau code vient d'être envoyé." }
+      ? { step: "code", email, info: "Un nouveau code vient d'être envoyé.", sentAt: Date.now() }
       : { step: "code", email, error: result.error };
   }
   const result = await verifyLoginCode(email, code);
