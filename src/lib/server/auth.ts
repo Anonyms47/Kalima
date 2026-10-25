@@ -72,6 +72,7 @@ export async function requestLoginCode(rawEmail: string): Promise<RequestCodeRes
     appUrl: appUrl(),
     contactPhone: settings.contact.phone,
     instagram: settings.contact.instagram,
+    snapchat: settings.contact.snapchat,
     whatsappUrl: whatsappUrl(settings.contact.whatsapp_number),
   });
 

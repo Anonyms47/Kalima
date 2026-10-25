@@ -16,6 +16,7 @@ export default async function SiteLayout({ children }: LayoutProps<"/">) {
         ambassadorCode={ambassadorCode}
         whatsapp={settings.contact.whatsapp_link || whatsappUrl(settings.contact.whatsapp_number)}
         instagram={settings.contact.instagram}
+        snapchat={settings.contact.snapchat}
         hours={settings.hours}
       />
       {settings.announcement ? (

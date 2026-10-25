@@ -74,7 +74,7 @@ where slug = 'brownies' and not exists (select 1 from product_formats f where f.
 -- Paramètres -------------------------------------------------------------------
 
 insert into settings (key, value) values
-  ('contact', '{"phone": "+221 70 926 22 07", "whatsapp_number": "221709262207", "whatsapp_link": "https://wa.me/message/AJA24FCTUXOXE1", "instagram": "kalimaaa_0", "email": ""}'),
+  ('contact', '{"phone": "+221 70 926 22 07", "whatsapp_number": "221709262207", "whatsapp_link": "https://wa.me/message/AJA24FCTUXOXE1", "instagram": "kalimaaa_0", "snapchat": "kalimaaa_00", "email": ""}'),
   ('hours', '"Tous les jours, de 9 h à 21 h"'),
   ('pickup', '{"area": "Dalifort", "details": ""}'),
   ('payment', '{"provider": "manual_link", "link": "", "label": "", "instructions": ""}'),

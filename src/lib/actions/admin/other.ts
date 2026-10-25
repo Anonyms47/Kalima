@@ -109,6 +109,7 @@ export async function saveSettingsAction(_prev: ActionResult, formData: FormData
       whatsapp_number: text(formData, "whatsappNumber", 20).replace(/\D/g, ""),
       whatsapp_link: text(formData, "whatsappLink", 200),
       instagram: text(formData, "instagram", 60).replace(/^@/, ""),
+      snapchat: text(formData, "snapchat", 60).replace(/^@/, ""),
       email: contactEmail,
     },
     hours: text(formData, "hours", 120),

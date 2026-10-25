@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { Bang, Logo } from "./brand";
 import { useCart } from "./cart/cart-context";
 import { Squiggle } from "./doodles";
-import { BagIcon, InstagramIcon, UserIcon, WhatsappIcon } from "./icons";
+import { BagIcon, InstagramIcon, SnapchatIcon, UserIcon, WhatsappIcon } from "./icons";
 
 const NAV = [
   { href: "/gourmandises", label: "Nos gourmandises", hint: "Gaufres et mini pancakes" },
@@ -23,6 +23,7 @@ type Props = {
   ambassadorCode?: string | null;
   whatsapp: string | null;
   instagram: string;
+  snapchat: string;
   hours: string;
 };
 
@@ -40,7 +41,7 @@ function BurgerIcon({ open }: { open: boolean }) {
   );
 }
 
-export function SiteHeader({ signedIn, isStaff, ambassadorCode, whatsapp, instagram, hours }: Props) {
+export function SiteHeader({ signedIn, isStaff, ambassadorCode, whatsapp, instagram, snapchat, hours }: Props) {
   const pathname = usePathname();
   const { count, ready, lastAdded } = useCart();
   const [open, setOpen] = useState(false);
@@ -269,6 +270,14 @@ export function SiteHeader({ signedIn, isStaff, ambassadorCode, whatsapp, instag
                 <Bang className="h-4 w-2.5 text-lilac" />
                 <a href={`https://instagram.com/${instagram}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-night underline decoration-lilac decoration-2 underline-offset-4">
                   <InstagramIcon /> @{instagram}
+                </a>
+              </>
+            ) : null}
+            {snapchat ? (
+              <>
+                <Bang className="h-4 w-2.5 text-lilac" />
+                <a href={`https://www.snapchat.com/add/${snapchat}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-night underline decoration-lilac decoration-2 underline-offset-4">
+                  <SnapchatIcon /> {snapchat}
                 </a>
               </>
             ) : null}

@@ -49,6 +49,7 @@ export function SettingsForm({ settings }: { settings: Settings }) {
               <Field id="whatsappNumber" label="Numéro WhatsApp (avec indicatif)" hint="Ex. 221709262207 : utilisé pour les messages préremplis."><input id="whatsappNumber" name="whatsappNumber" defaultValue={settings.contact.whatsapp_number} className="field" /></Field>
               <Field id="whatsappLink" label="Lien WhatsApp professionnel"><input id="whatsappLink" name="whatsappLink" defaultValue={settings.contact.whatsapp_link} className="field" /></Field>
               <Field id="instagram" label="Instagram"><input id="instagram" name="instagram" defaultValue={settings.contact.instagram} className="field" /></Field>
+              <Field id="snapchat" label="Snapchat"><input id="snapchat" name="snapchat" defaultValue={settings.contact.snapchat} placeholder="Nom d'utilisateur" className="field" /></Field>
               <Field id="contactEmail" label="E-mail de contact (facultatif)"><input id="contactEmail" name="contactEmail" type="email" defaultValue={settings.contact.email} className="field" /></Field>
               <Field id="hours" label="Horaires"><input id="hours" name="hours" defaultValue={settings.hours} className="field" /></Field>
               <Field id="pickupArea" label="Zone de retrait"><input id="pickupArea" name="pickupArea" defaultValue={settings.pickup.area} className="field" /></Field>

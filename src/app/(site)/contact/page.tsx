@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Logo } from "@/components/brand";
-import { InstagramIcon, PhoneIcon, PinIcon, WhatsappIcon } from "@/components/icons";
+import { InstagramIcon, PhoneIcon, PinIcon, SnapchatIcon, WhatsappIcon } from "@/components/icons";
 import { PaperCard } from "@/components/paper-card";
 import { getSettings } from "@/lib/server/settings";
 import { whatsappUrl } from "@/lib/whatsapp";
@@ -80,6 +80,13 @@ export default async function ContactPage() {
                   <LabelLine icon={<InstagramIcon className="size-5 text-kraft-deep" />} label="Instagram">
                     <a href={`https://instagram.com/${contact.instagram}`} target="_blank" rel="noopener noreferrer" className={link}>
                       @{contact.instagram}
+                    </a>
+                  </LabelLine>
+                ) : null}
+                {contact.snapchat ? (
+                  <LabelLine icon={<SnapchatIcon className="size-5 text-kraft-deep" />} label="Snapchat">
+                    <a href={`https://www.snapchat.com/add/${contact.snapchat}`} target="_blank" rel="noopener noreferrer" className={link}>
+                      {contact.snapchat}
                     </a>
                   </LabelLine>
                 ) : null}

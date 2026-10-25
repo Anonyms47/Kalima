@@ -8,6 +8,7 @@ export type Settings = {
     whatsapp_number: string;
     whatsapp_link: string;
     instagram: string;
+    snapchat: string;
     email: string;
   };
   hours: string;
@@ -26,7 +27,7 @@ export type Settings = {
 };
 
 export const DEFAULT_SETTINGS: Settings = {
-  contact: { phone: "", whatsapp_number: "", whatsapp_link: "", instagram: "", email: "" },
+  contact: { phone: "", whatsapp_number: "", whatsapp_link: "", instagram: "", snapchat: "", email: "" },
   hours: "",
   pickup: { area: "", details: "", map_url: "" },
   payment: { provider: "manual_link", link: "", label: "", instructions: "" },

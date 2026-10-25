@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Settings } from "@/lib/server/settings";
 import { whatsappUrl } from "@/lib/whatsapp";
 import { Bang, Logo } from "./brand";
-import { ArrowIcon, ClockIcon, InstagramIcon, PhoneIcon, PinIcon, WhatsappIcon } from "./icons";
+import { ArrowIcon, ClockIcon, InstagramIcon, PhoneIcon, PinIcon, SnapchatIcon, WhatsappIcon } from "./icons";
 
 const shopLinks = [
   { href: "/gourmandises", label: "Nos gourmandises" },
@@ -99,6 +99,17 @@ export function SiteFooter({ settings }: { settings: Settings }) {
                 aria-label={`Instagram @${contact.instagram}`}
               >
                 <InstagramIcon />
+              </a>
+            ) : null}
+            {contact.snapchat ? (
+              <a
+                href={`https://www.snapchat.com/add/${contact.snapchat}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={iconLink}
+                aria-label={`Snapchat ${contact.snapchat}`}
+              >
+                <SnapchatIcon />
               </a>
             ) : null}
           </div>

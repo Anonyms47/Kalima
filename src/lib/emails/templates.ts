@@ -18,6 +18,7 @@ export type EmailContext = {
   contactPhone: string;
   whatsappUrl: string | null;
   instagram: string;
+  snapchat?: string;
 };
 
 export type OrderEmailData = {
@@ -58,6 +59,7 @@ function layout(ctx: EmailContext, opts: { preheader: string; title: string; not
   const contact = [
     ctx.contactPhone && `Téléphone et WhatsApp : ${escape(ctx.contactPhone)}`,
     ctx.instagram && `Instagram : @${escape(ctx.instagram)}`,
+    ctx.snapchat && `Snapchat : ${escape(ctx.snapchat)}`,
   ]
     .filter(Boolean)
     .join("<br>");
@@ -110,6 +112,7 @@ function textFooter(ctx: EmailContext) {
   const lines = ["", "Une question ? Écrivez-nous :"];
   if (ctx.contactPhone) lines.push(`Téléphone et WhatsApp : ${ctx.contactPhone}`);
   if (ctx.instagram) lines.push(`Instagram : @${ctx.instagram}`);
+  if (ctx.snapchat) lines.push(`Snapchat : ${ctx.snapchat}`);
   lines.push("", "KALIMA · Cake and bakery");
   return lines.join("\n");
 }

@@ -4,7 +4,7 @@ import { Bang } from "@/components/brand";
 import { CurlyArrow, ScribbleHeart, SketchArrow, Squiggle } from "@/components/doodles";
 import { PetitMotWriter } from "@/components/home/petit-mot-writer";
 import { Receipt, ReceiptLine } from "@/components/receipt";
-import { ArrowIcon, GiftIcon, InstagramIcon, WhatsappIcon } from "@/components/icons";
+import { ArrowIcon, GiftIcon, InstagramIcon, SnapchatIcon, WhatsappIcon } from "@/components/icons";
 import { availability } from "@/lib/availability";
 import { formatPrice } from "@/lib/format";
 import { listPublishedProducts, listSupplements, type PublicProduct } from "@/lib/server/catalog";
@@ -312,6 +312,11 @@ export default async function HomePage() {
             {settings.contact.instagram ? (
               <a href={`https://instagram.com/${settings.contact.instagram}`} target="_blank" rel="noopener noreferrer" className="btn-ghost">
                 <InstagramIcon /> @{settings.contact.instagram}
+              </a>
+            ) : null}
+            {settings.contact.snapchat ? (
+              <a href={`https://www.snapchat.com/add/${settings.contact.snapchat}`} target="_blank" rel="noopener noreferrer" className="btn-ghost">
+                <SnapchatIcon /> {settings.contact.snapchat}
               </a>
             ) : null}
           </div>

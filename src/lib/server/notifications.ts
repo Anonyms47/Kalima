@@ -77,6 +77,7 @@ export async function deliverNotification(id: string, { manual = false } = {}): 
       appUrl: appUrl(),
       contactPhone: settings.contact.phone,
       instagram: settings.contact.instagram,
+      snapchat: settings.contact.snapchat,
       whatsappUrl: whatsappUrl(settings.contact.whatsapp_number, `Bonjour KALIMA, je vous écris au sujet de la commande ${data.reference}.`),
     });
     result = await sendEmail({ to: claimed.recipient, toName: data.firstName, ...rendered, tags: [claimed.kind] });
