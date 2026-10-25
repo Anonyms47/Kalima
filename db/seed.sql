@@ -63,12 +63,9 @@ values
   ('brownies', 'Brownies', '', '', 'draft', 10,
    'Prix communiqué : 1 500 FCFA, topping 500 FCFA. À compléter : format, description et photos.'),
   ('cinnamon-rolls', 'Cinnamon rolls', '', '', 'draft', 11,
-   'À compléter : formats, prix, description et photos.'),
-  ('box-famille', 'Box famille', '', '', 'draft', 12,
-   'À compléter : composition, prix et photos. Exclue des récompenses ambassadeur.')
+   'À compléter : formats, prix, description et photos.')
 on conflict (slug) do nothing;
 
-update products set is_family_box = true, reward_eligible = false where slug = 'box-famille';
 
 insert into product_formats (product_id, label, pricing, price, active, sort_order)
 select id, 'Format à préciser', 'fixed', 1500, false, 1 from products

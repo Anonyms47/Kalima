@@ -94,7 +94,9 @@ describe("programme ambassadeur", () => {
     for (let i = 0; i < 5; i++) await deliveredOrderFor(await makeUser("filleul"), code);
     const [reward] = await sql<{ id: string }[]>`select id from rewards where ambassador_user_id = ${amb.id}`;
     const m = await product("mini-pancakes");
-    const family = await product("box-famille");
+    const [family] = await sql<{ id: string }[]>`
+      insert into products (slug, name, status, is_family_box) values ('box-famille-test', 'Box famille test', 'published', true)
+      on conflict (slug) do update set status = 'published' returning id`;
     const claim = {
       rewardId: reward.id,
       productId: m.id,
