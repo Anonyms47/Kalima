@@ -61,7 +61,7 @@ export async function createFamilyBoxRequest(userId: string | null, input: Famil
 
   const [row] = await sql<{ id: string; reference: string }[]>`
     insert into family_box_requests (reference, user_id, name, phone, items, guests, wanted_date, note)
-    values (${await nextRequestReference(sql)}, ${userId}, ${name}, ${phone}, ${sql.json(items)}, ${guests}, ${wantedDate}, ${note || null})
+    values (${await nextRequestReference(sql, "BF")}, ${userId}, ${name}, ${phone}, ${sql.json(items)}, ${guests}, ${wantedDate}, ${note || null})
     returning id, reference`;
   await audit(sql, { userId, label: name }, "family_box.requested", "family_box", row.id, { reference: row.reference });
   return { ok: true as const, reference: row.reference, items };

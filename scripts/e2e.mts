@@ -244,7 +244,7 @@ try {
     await page.getByRole("button", { name: "Envoyer ma demande" }).last().click();
     await page.getByText("DEMANDE REÇUE").waitFor();
     const ref = (await page.locator('[role="status"] .tabular').first().textContent())!.trim();
-    assert.match(ref, /^KAL-\d{2}-DM\d{3,}$/);
+    assert.match(ref, /^KAL-\d{2}-BF\d{3,}$/);
     await admin.goto(`${BASE}/admin/box-famille`);
     await admin.getByRole("link", { name: new RegExp(ref) }).click();
     await admin.getByText("3 ×").first().waitFor();

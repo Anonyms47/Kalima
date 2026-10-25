@@ -19,16 +19,16 @@ function currentYear() {
 }
 
 /**
- * Numéro de demande (événement ou box famille) : KAL-26-DM001, KAL-26-DM002…
- * Un seul compteur annuel pour les deux types de demande.
+ * Numéro de demande, une suite par type et par année :
+ * KAL-26-EV001 (événements), KAL-26-BF001 (box famille).
  */
-export async function nextRequestReference(db: Db) {
+export async function nextRequestReference(db: Db, scope: "EV" | "BF") {
   const year = currentYear();
   const [row] = await db<{ last_value: number }[]>`
-    insert into request_counters (year, last_value) values (${year}, 1)
-    on conflict (year) do update set last_value = request_counters.last_value + 1
+    insert into request_counters (scope, year, last_value) values (${scope}, ${year}, 1)
+    on conflict (scope, year) do update set last_value = request_counters.last_value + 1
     returning last_value`;
-  return `KAL-${String(year).padStart(2, "0")}-DM${String(row.last_value).padStart(3, "0")}`;
+  return `KAL-${String(year).padStart(2, "0")}-${scope}${String(row.last_value).padStart(3, "0")}`;
 }
 
 /**
