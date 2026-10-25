@@ -25,8 +25,8 @@ function currentYear() {
 export async function nextRequestReference(db: Db, scope: "EV" | "BF") {
   const year = currentYear();
   const [row] = await db<{ last_value: number }[]>`
-    insert into request_counters (scope, year, last_value) values (${scope}, ${year}, 1)
-    on conflict (scope, year) do update set last_value = request_counters.last_value + 1
+    insert into request_number_counters (scope, year, last_value) values (${scope}, ${year}, 1)
+    on conflict (scope, year) do update set last_value = request_number_counters.last_value + 1
     returning last_value`;
   return `KAL-${String(year).padStart(2, "0")}-${scope}${String(row.last_value).padStart(3, "0")}`;
 }
