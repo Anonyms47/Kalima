@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState } from "react";
-import { Note } from "@/components/note";
 import { requestEventAction, type EventFormState } from "./actions";
 
 const OCCASIONS = ["Anniversaire", "Baptême", "Mariage", "Fête de famille", "Événement d'entreprise", "Autre"];
@@ -13,10 +12,13 @@ export function EventForm({ defaults }: { defaults: { name: string; phone: strin
 
   if (state.ok) {
     return (
-      <div className="rise flex flex-col items-center py-6 text-center" role="status">
-        <Note className="w-full max-w-sm" signature="KALIMA">Merci ! Votre demande est bien arrivée.</Note>
-        <p className="display mt-10 text-2xl">Demande {state.reference}</p>
-        <p className="mt-3 max-w-md text-muted">
+      <div className="rise flex flex-col items-center py-4 text-center" role="status">
+        <span className="inline-flex -rotate-6 flex-col items-center rounded-lg border-[3px] border-violet px-5 py-1.5 text-violet">
+          <span className="display text-xl tracking-[0.18em]">DEMANDE REÇUE</span>
+          <span className="tabular text-xs font-semibold">{state.reference}</span>
+        </span>
+        <p className="hand mt-8 text-3xl text-violet">Merci, à très vite !</p>
+        <p className="mt-3 max-w-md text-night/75">
           Ce n&apos;est pas encore une réservation : nous vérifions la disponibilité pour votre date, puis nous revenons vers vous sur WhatsApp avec un devis.
         </p>
       </div>
@@ -86,17 +88,19 @@ export function EventForm({ defaults }: { defaults: { name: string; phone: strin
       <div>
         <label htmlFor="productsWanted" className="field-label">Produits et quantités souhaités</label>
         <textarea {...field("productsWanted")} rows={3} required defaultValue={v.productsWanted ?? ""} placeholder="Ex. 60 gaufres, 50 mini pancakes au caramel…" className="field" />
-        <p className="field-hint">Minimum 50 pièces par variété.</p>
+        <p className="hand mt-1 text-lg text-violet/80">50 pièces minimum par variété</p>
         {error("productsWanted")}
       </div>
       <div>
         <label htmlFor="details" className="field-label">Précisions <span className="font-normal text-muted">(facultatif)</span></label>
         <textarea {...field("details")} rows={3} defaultValue={v.details ?? ""} placeholder="Horaire, thème, installation sur place souhaitée…" className="field" />
       </div>
-      <button type="submit" disabled={pending} className="btn-primary w-full text-base sm:w-auto">
-        {pending ? "Envoi…" : "Demander une réservation"}
-      </button>
-      <p className="text-sm text-muted">L&apos;envoi de ce formulaire ne réserve pas automatiquement la date.</p>
+      <div className="border-t border-dashed border-kraft/60 pt-5 text-center">
+        <button type="submit" disabled={pending} className="btn-primary w-full text-base sm:w-auto">
+          {pending ? "Envoi…" : "Demander une réservation"}
+        </button>
+        <p className="mt-3 text-sm text-muted">L&apos;envoi de ce formulaire ne réserve pas automatiquement la date.</p>
+      </div>
     </form>
   );
 }
