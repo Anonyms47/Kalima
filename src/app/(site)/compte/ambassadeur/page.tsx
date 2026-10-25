@@ -63,7 +63,7 @@ export default async function AmbassadorPage() {
       <div className="mt-10 grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:items-start">
         <section aria-labelledby="mon-code">
           <h2 id="mon-code" className="text-xs font-bold tracking-[0.2em] text-muted uppercase">Mon code personnel</h2>
-          <StampCard stamps={inTranche} code={overview.code} caption={`encore ${overview.nextRewardIn} avant la box`} className="mt-3 rotate-[-1deg]" />
+          <StampCard stamps={inTranche} code={overview.code} caption={`plus que ${overview.nextRewardIn} !`} className="mt-3 rotate-[-1deg]" />
           <div className="mt-6 flex flex-wrap gap-2">
             <CopyButton value={overview.code} label="Copier le code" />
             <CopyButton value={shareUrl} label="Copier le lien" />
