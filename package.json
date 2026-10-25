@@ -11,6 +11,7 @@
     "db:seed": "tsx --env-file-if-exists=.env.local scripts/db.mts seed",
     "db:reset": "tsx --env-file-if-exists=.env.local scripts/db.mts reset",
     "staff:add": "tsx --env-file-if-exists=.env.local scripts/add-staff.mts",
+    "login:link": "tsx --env-file-if-exists=.env.local scripts/login-link.mts",
     "test": "vitest run",
     "typecheck": "next typegen && tsc --noEmit"
   },

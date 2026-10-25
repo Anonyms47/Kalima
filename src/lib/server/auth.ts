@@ -135,6 +135,19 @@ export async function verifyLoginCode(rawEmail: string, rawCode: string): Promis
   return { ok: true, userId: user.id };
 }
 
+/** Lien de connexion à usage unique (voir scripts/login-link.mts). */
+export async function consumeLoginLink(token: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  if (!token) return { ok: false, error: "Lien incomplet." };
+  const [row] = await sql<{ user_id: string }[]>`
+    update login_links set consumed_at = now()
+    where token_hash = ${hashToken(token)} and consumed_at is null and expires_at > now()
+    returning user_id`;
+  if (!row) return { ok: false, error: "Ce lien a expiré ou a déjà servi. Demandez-en un nouveau." };
+  await sql`update users set email_verified_at = coalesce(email_verified_at, now()), updated_at = now() where id = ${row.user_id}`;
+  await createSession(row.user_id);
+  return { ok: true };
+}
+
 async function createSession(userId: string) {
   const token = randomBytes(32).toString("base64url");
   await sql`

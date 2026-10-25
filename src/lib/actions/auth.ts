@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { requestLoginCode, safeNext, signOut, verifyLoginCode } from "@/lib/server/auth";
+import { consumeLoginLink, requestLoginCode, safeNext, signOut, verifyLoginCode } from "@/lib/server/auth";
 
 export type LoginState = { step: "email" | "code"; email: string; error?: string; info?: string; sentAt?: number };
 
@@ -25,6 +25,12 @@ export async function verifyCodeAction(_prev: LoginState, formData: FormData): P
   const result = await verifyLoginCode(email, code);
   if (!result.ok) return { step: "code", email, error: result.error };
   redirect(next);
+}
+
+export async function loginWithLinkAction(_prev: { error?: string }, formData: FormData): Promise<{ error?: string }> {
+  const result = await consumeLoginLink(String(formData.get("token") ?? ""));
+  if (!result.ok) return { error: result.error };
+  redirect(safeNext(String(formData.get("next") ?? ""), "/compte"));
 }
 
 export async function signOutAction() {
