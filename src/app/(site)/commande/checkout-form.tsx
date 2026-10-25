@@ -3,11 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { CheckoutSteps } from "@/components/checkout-steps";
 import { useCart } from "@/components/cart/cart-context";
 import { lineDetail } from "@/components/cart/cart-line-summary";
 import { useQuote } from "@/components/cart/use-quote";
+import { readPetitMot, savePetitMot } from "@/lib/petit-mot";
 import { GiftIcon, PinIcon } from "@/components/icons";
 import { formatPrice } from "@/lib/format";
 import { placeOrderAction } from "./actions";
@@ -54,6 +55,7 @@ export function CheckoutForm({ defaults, pickupArea, ordersOpen }: Props) {
       });
       if (result.ok) {
         clear();
+        savePetitMot("");
         router.push(`/compte/commandes/${result.reference}?nouvelle=1`);
       } else {
         setError(result.error);
@@ -190,6 +192,15 @@ export function CheckoutForm({ defaults, pickupArea, ordersOpen }: Props) {
 
 function GiftNoteChoice() {
   const [mode, setMode] = useState<"kalima" | "custom">("kalima");
+  // Un mot écrit sur l'accueil est repris ici.
+  const [draft, setDraft] = useState("");
+  useEffect(() => {
+    const saved = readPetitMot();
+    if (!saved) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDraft(saved);
+    setMode("custom");
+  }, []);
   return (
     <>
       <div className="grid gap-3 sm:grid-cols-2">
@@ -215,6 +226,7 @@ function GiftNoteChoice() {
             rows={3}
             maxLength={300}
             required
+            defaultValue={draft}
             className="hand w-full resize-none bg-transparent text-[1.55rem] leading-[2rem] text-violet placeholder:text-violet/45 focus:outline-none"
             placeholder="Joyeux anniversaire Fatou !"
           />
