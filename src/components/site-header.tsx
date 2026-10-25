@@ -132,7 +132,7 @@ export function SiteHeader({ signedIn, isStaff, whatsapp, instagram, hours }: Pr
                 <Link
                   href={item.href}
                   aria-current={isActive(item.href) ? "page" : undefined}
-                  className="inline-flex min-h-10 items-center gap-1.5 rounded-full px-4 text-[0.93rem] font-semibold text-night/70 transition hover:bg-white/70 hover:text-night aria-[current=page]:bg-white aria-[current=page]:text-night aria-[current=page]:shadow-[var(--shadow-soft)]"
+                  className="inline-flex min-h-10 items-center gap-1.5 rounded-full px-3 text-[0.9rem] font-semibold whitespace-nowrap xl:px-4 xl:text-[0.93rem] text-night/70 transition hover:bg-white/70 hover:text-night aria-[current=page]:bg-white aria-[current=page]:text-night aria-[current=page]:shadow-[var(--shadow-soft)]"
                 >
                   {isActive(item.href) ? <Bang className="h-3.5 w-2 text-lilac" /> : null}
                   {item.label}
@@ -142,10 +142,10 @@ export function SiteHeader({ signedIn, isStaff, whatsapp, instagram, hours }: Pr
           </ul>
         </nav>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex shrink-0 items-center gap-1.5">
           {isStaff ? (
-            <Link href="/admin" className="btn-ghost btn-sm hidden xl:inline-flex">
-              Administration
+            <Link href="/admin" className="btn-ghost btn-sm hidden whitespace-nowrap xl:inline-flex">
+              Admin
             </Link>
           ) : null}
           <Link
@@ -158,11 +158,11 @@ export function SiteHeader({ signedIn, isStaff, whatsapp, instagram, hours }: Pr
           </Link>
           <Link
             href="/panier"
-            className="relative inline-flex size-11 items-center justify-center gap-2 rounded-full bg-night text-white shadow-[0_8px_20px_-10px_rgb(14_18_54/0.6)] transition hover:bg-night-soft active:translate-y-px sm:w-auto sm:px-4"
+            className="relative inline-flex size-11 items-center justify-center gap-2 rounded-full bg-night text-white shadow-[0_8px_20px_-10px_rgb(14_18_54/0.6)] transition hover:bg-night-soft active:translate-y-px sm:w-auto sm:px-4 lg:w-auto lg:px-3.5 xl:px-4"
             aria-label={hasItems ? `Panier, ${count} boîte${count > 1 ? "s" : ""}` : "Panier"}
           >
             <BagIcon className="size-[1.3rem]" />
-            <span className="hidden text-sm font-semibold sm:inline">Panier</span>
+            <span className="hidden text-sm font-semibold sm:inline lg:hidden xl:inline">Panier</span>
             {hasItems ? (
               <span
                 key={lastAdded}
