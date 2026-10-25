@@ -2,7 +2,7 @@ import "server-only";
 import { EMAIL_PATTERN, normalizeEmail } from "./auth";
 import { audit } from "./audit";
 import { sql } from "./db";
-import { newReference } from "./orders";
+import { nextRequestReference } from "./orders";
 
 export const EVENT_STATUS_LABELS = {
   new: "Nouvelle demande",
@@ -68,7 +68,7 @@ export async function createEventRequest(userId: string | null, input: EventRequ
   if (Object.keys(errors).length) return { ok: false as const, errors };
   const [row] = await sql<{ id: string; reference: string }[]>`
     insert into event_requests (reference, user_id, name, phone, email, occasion, event_date, location, guests, products_wanted, details)
-    values (${newReference("EVT")}, ${userId}, ${data.name}, ${data.phone}, ${data.email}, ${data.occasion}, ${data.eventDate},
+    values (${await nextRequestReference(sql)}, ${userId}, ${data.name}, ${data.phone}, ${data.email}, ${data.occasion}, ${data.eventDate},
       ${data.location}, ${data.guests}, ${data.productsWanted}, ${data.details || null})
     returning id, reference`;
   await audit(sql, { userId, label: data.name }, "event.requested", "event", row.id, { reference: row.reference });

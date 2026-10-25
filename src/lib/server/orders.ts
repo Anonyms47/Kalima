@@ -1,5 +1,4 @@
 import "server-only";
-import { randomInt } from "node:crypto";
 import { availability } from "../availability";
 import { TIME_ZONE } from "../config";
 import { canTransition, type Fulfillment, type OrderStatus } from "../order-status";
@@ -13,13 +12,23 @@ import { loadSettings } from "./settings";
 
 export class OrderError extends Error {}
 
-const REF_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 
-/** Référence aléatoire (demandes d'événement). */
-export function newReference(prefix = "EVT") {
-  let ref = "";
-  for (let i = 0; i < 6; i++) ref += REF_ALPHABET[randomInt(REF_ALPHABET.length)];
-  return `${prefix}-${ref}`;
+/** Année en cours sur deux chiffres, heure de Dakar. */
+function currentYear() {
+  return Number(new Intl.DateTimeFormat("en", { year: "2-digit", timeZone: TIME_ZONE }).format(new Date()));
+}
+
+/**
+ * Numéro de demande (événement ou box famille) : KAL-26-DM001, KAL-26-DM002…
+ * Un seul compteur annuel pour les deux types de demande.
+ */
+export async function nextRequestReference(db: Db) {
+  const year = currentYear();
+  const [row] = await db<{ last_value: number }[]>`
+    insert into request_counters (year, last_value) values (${year}, 1)
+    on conflict (year) do update set last_value = request_counters.last_value + 1
+    returning last_value`;
+  return `KAL-${String(year).padStart(2, "0")}-DM${String(row.last_value).padStart(3, "0")}`;
 }
 
 /**
@@ -27,7 +36,7 @@ export function newReference(prefix = "EVT") {
  * incrémenté dans la transaction de la commande, donc sans doublon ni trou en cas d'échec.
  */
 export async function nextOrderReference(tx: Tx) {
-  const year = Number(new Intl.DateTimeFormat("en", { year: "2-digit", timeZone: TIME_ZONE }).format(new Date()));
+  const year = currentYear();
   const [row] = await tx<{ last_value: number }[]>`
     insert into order_counters (year, last_value) values (${year}, 1)
     on conflict (year) do update set last_value = order_counters.last_value + 1
