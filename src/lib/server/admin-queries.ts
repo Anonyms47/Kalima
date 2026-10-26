@@ -179,6 +179,92 @@ export async function getEventRequest(id: string) {
 }
 
 // ---------------------------------------------------------------------------
+// Ventes par produit
+// ---------------------------------------------------------------------------
+
+export type ProductSales = {
+  product_name: string;
+  boxes: number;
+  orders: number;
+  revenue: number;
+  offered: number;
+  formats: { format_label: string; boxes: number; revenue: number }[];
+};
+
+export type ProductPerformance = {
+  products: ProductSales[];
+  supplements: { name: string; boxes: number; revenue: number }[];
+  familyBoxes: { count: number; revenue: number };
+  total: number;
+};
+
+/**
+ * Ce que chaque produit rapporte sur la période : commandes payées (date de paiement
+ * vérifié), hors commandes remboursées. Chiffre d'affaires, pas bénéfice : les coûts
+ * ne sont pas connus du site. Les box offertes aux ambassadeurs sont comptées à part.
+ * `days` à null : depuis l'ouverture.
+ */
+export async function getProductPerformance(days: number | null): Promise<ProductPerformance> {
+  const period = days === null ? sql`true` : sql`o.paid_at >= now() - make_interval(days => ${days})`;
+  const lines = await sql<{ product_name: string; format_label: string; kind: string; order_id: string; boxes: number; line_total: number; supplements: { name: string; price: number }[] }[]>`
+    select i.product_name, i.format_label, o.kind, o.id as order_id, i.boxes, i.line_total, i.supplements
+    from order_items i join orders o on o.id = i.order_id
+    where o.paid_at is not null and o.status <> 'refunded' and ${period}`;
+
+  const byProduct = new Map<string, ProductSales & { orderIds: Set<string>; formatMap: Map<string, { boxes: number; revenue: number }> }>();
+  const supplements = new Map<string, { boxes: number; revenue: number }>();
+  for (const line of lines) {
+    const p =
+      byProduct.get(line.product_name) ??
+      { product_name: line.product_name, boxes: 0, orders: 0, revenue: 0, offered: 0, formats: [], orderIds: new Set<string>(), formatMap: new Map() };
+    byProduct.set(line.product_name, p);
+    if (line.kind === "reward") {
+      p.offered += line.boxes;
+      continue;
+    }
+    p.boxes += line.boxes;
+    p.revenue += line.line_total;
+    p.orderIds.add(line.order_id);
+    const f = p.formatMap.get(line.format_label) ?? { boxes: 0, revenue: 0 };
+    f.boxes += line.boxes;
+    f.revenue += line.line_total;
+    p.formatMap.set(line.format_label, f);
+    for (const s of line.supplements ?? []) {
+      const entry = supplements.get(s.name) ?? { boxes: 0, revenue: 0 };
+      entry.boxes += line.boxes;
+      entry.revenue += s.price * line.boxes;
+      supplements.set(s.name, entry);
+    }
+  }
+
+  const products: ProductSales[] = [...byProduct.values()]
+    .map(({ orderIds, formatMap, ...p }) => ({
+      ...p,
+      orders: orderIds.size,
+      formats: [...formatMap].map(([format_label, f]) => ({ format_label, ...f })).sort((a, b) => b.revenue - a.revenue),
+    }))
+    .sort((a, b) => b.revenue - a.revenue || b.boxes - a.boxes);
+
+  const familyPeriod = days === null ? sql`true` : sql`paid_at >= now() - make_interval(days => ${days})`;
+  const [family] = await sql<{ count: number; revenue: number }[]>`
+    select count(*)::int as count, coalesce(sum(price), 0)::int as revenue
+    from family_box_requests where paid_at is not null and status <> 'cancelled' and ${familyPeriod}`;
+
+  // La box famille entre dans le classement comme un produit (une box = une « boîte »).
+  if (family.count > 0) {
+    products.push({ product_name: "Box famille", boxes: family.count, orders: family.count, revenue: family.revenue, offered: 0, formats: [] });
+    products.sort((a, b) => b.revenue - a.revenue || b.boxes - a.boxes);
+  }
+
+  return {
+    products,
+    supplements: [...supplements].map(([name, v]) => ({ name, ...v })).sort((a, b) => b.boxes - a.boxes),
+    familyBoxes: family,
+    total: products.reduce((sum, p) => sum + p.revenue, 0),
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Box famille
 // ---------------------------------------------------------------------------
 

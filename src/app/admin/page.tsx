@@ -170,7 +170,12 @@ export default async function AdminHome({ searchParams }: PageProps<"/admin">) {
         <div className="space-y-10">
           {/* Boîtes vendues ---------------------------------------------------- */}
           <section aria-labelledby="boites-titre">
-            <h2 id="boites-titre" className="display text-2xl">Boîtes vendues</h2>
+            <div className="flex flex-wrap items-baseline justify-between gap-3">
+              <h2 id="boites-titre" className="display text-2xl">Boîtes vendues</h2>
+              <Link href={`/admin/ventes?periode=${days}`} className="inline-flex items-center gap-1.5 text-sm font-semibold text-violet underline decoration-lilac decoration-2 underline-offset-4">
+                Ce que chaque produit rapporte <ArrowIcon className="size-4" />
+              </Link>
+            </div>
             {sales.products.length ? (
               <ul className="mt-5 space-y-4">
                 {sales.products.map((p, index) => {

@@ -7,6 +7,7 @@ export const ADMIN_LINKS = [
 ];
 
 export const SECONDARY_LINKS = [
+  { href: "/admin/ventes", label: "Ventes", hint: "ce que chaque produit rapporte" },
   { href: "/admin/box-famille", label: "Box famille", hint: "compositions à chiffrer" },
   { href: "/admin/ambassadeurs", label: "Ambassadeurs", hint: "filleuls et box offertes" },
   { href: "/admin/supplements", label: "Suppléments", hint: "caramel, chantilly…" },
