@@ -55,7 +55,10 @@ async function load(db: Db): Promise<Settings> {
         ? { ...fallback, ...row.value }
         : row.value;
   }
-  return result as Settings;
+  const settings = result as Settings;
+  // Tant qu'aucune adresse n'est saisie dans l'administration : celle des e-mails de la boutique.
+  if (!settings.contact.email) settings.contact = { ...settings.contact, email: process.env.EMAIL_REPLY_TO ?? "" };
+  return settings;
 }
 
 export const getSettings = cache(() => load(sql));
