@@ -40,3 +40,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# e-mails de test (mode log)
+.outbox/
+# captures de vérification
+/screenshots/
+.uploads/
