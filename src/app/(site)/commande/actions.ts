@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/server/auth";
+import { rateLimit } from "@/lib/server/rate-limit";
 import { createOrder, OrderError } from "@/lib/server/orders";
 
 const schema = z.object({
@@ -31,6 +32,10 @@ export type PlaceOrderResult = { ok: true; reference: string } | { ok: false; er
 export async function placeOrderAction(input: z.infer<typeof schema>): Promise<PlaceOrderResult> {
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: "Votre session a expiré. Reconnectez-vous pour valider la commande." };
+  // Une commande réserve du stock : on empêche qu'un seul compte en crée des dizaines.
+  if (!(await rateLimit(`order:user:${user.id}`, 8, 60 * 60))) {
+    return { ok: false, error: "Vous avez passé beaucoup de commandes en peu de temps. Réessayez dans une heure ou écrivez-nous sur WhatsApp." };
+  }
   const parsed = schema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Certaines informations sont invalides. Vérifiez le formulaire." };
   try {

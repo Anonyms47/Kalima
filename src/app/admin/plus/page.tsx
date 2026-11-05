@@ -2,10 +2,12 @@ import Link from "next/link";
 import { ArrowIcon } from "@/components/icons";
 import { signOutAction } from "@/lib/actions/auth";
 import { getDashboardCounts } from "@/lib/server/admin-queries";
+import { requireStaff } from "@/lib/server/auth";
 import { SECONDARY_LINKS } from "../_components/admin-links";
 import { AdminHeader, Count } from "../_components/ui";
 
 export default async function AdminMorePage() {
+  await requireStaff();
   const counts = await getDashboardCounts();
   const badges: Record<string, number> = { "/admin/notifications": counts.failed_notifications, "/admin/box-famille": counts.new_family_boxes };
   return (
