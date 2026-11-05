@@ -3,7 +3,7 @@ import { appUrl } from "@/lib/config";
 import { listPublishedProducts } from "@/lib/server/catalog";
 
 // Pages publiques seulement : le compte, le panier et l'administration n'ont rien à faire dans Google.
-const PAGES = ["", "/gourmandises", "/box-famille", "/evenements", "/notre-histoire", "/ambassadeurs", "/infos", "/contact"];
+const PAGES = ["", "/gourmandises", "/box-famille", "/evenements", "/notre-histoire", "/ambassadeurs", "/contact", "/infos/commande-et-retrait", "/infos/conditions-de-vente", "/infos/confidentialite"];
 
 export const revalidate = 3600;
 
