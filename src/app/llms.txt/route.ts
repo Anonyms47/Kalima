@@ -16,7 +16,7 @@ export async function GET() {
     "> Gaufres et mini pancakes préparés à la commande à Dakar (Sénégal), nappés de sauce chocolat, avec un petit mot glissé dans chaque boîte. Commande en ligne, livraison ou retrait.",
     "",
     "KALIMA est une pâtisserie artisanale qui vend uniquement en ligne et sur commande : il n'y a pas de boutique ouverte au public.",
-    pickup.area ? `Retrait : ${pickup.area}.` : "",
+    pickup.area ? `Retrait : ${[pickup.area, pickup.details].filter(Boolean).join(", ")}.` : "",
     "",
     "## Gourmandises",
     ...(products.length
