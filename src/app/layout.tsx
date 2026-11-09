@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl()),
   title: {
-    default: "KALIMA · Gaufres et mini pancakes",
+    default: "KALIMA · Gaufres et mini pancakes à Dakar",
     template: "%s · KALIMA",
   },
   description:

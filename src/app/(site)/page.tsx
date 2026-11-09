@@ -75,6 +75,13 @@ export default async function HomePage() {
         "@id": `${base}/#organisation`,
         name: "KALIMA",
         alternateName: "Kalima Cake and bakery",
+        description: "Gaufres et mini pancakes préparés à la commande à Dakar, nappés de sauce chocolat, avec un petit mot glissé dans chaque boîte. Vente en ligne, livraison ou retrait.",
+        // Pas de boutique ouverte au public : on indique la zone desservie plutôt qu'une adresse.
+        areaServed: [
+          { "@type": "City", name: "Dakar" },
+          { "@type": "Country", name: "Sénégal" },
+        ],
+        knowsAbout: products.map((p) => p.name),
         url: base,
         logo: { "@type": "ImageObject", url: `${base}/icons/icon-512.png`, width: 512, height: 512 },
         image: `${base}/photos/gamme-boites-et-pot.jpg`,
