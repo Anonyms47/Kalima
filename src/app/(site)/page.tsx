@@ -6,6 +6,7 @@ import { PetitMotWriter } from "@/components/home/petit-mot-writer";
 import { Receipt, ReceiptLine } from "@/components/receipt";
 import { ArrowIcon, GiftIcon, InstagramIcon, SnapchatIcon, WhatsappIcon } from "@/components/icons";
 import { availability } from "@/lib/availability";
+import { appUrl } from "@/lib/config";
 import { formatPrice } from "@/lib/format";
 import { listPublishedProducts, listSupplements, type PublicProduct } from "@/lib/server/catalog";
 import { getSettings } from "@/lib/server/settings";
@@ -62,6 +63,31 @@ const TICKET = [
 
 export default async function HomePage() {
   const [products, supplements, settings] = await Promise.all([listPublishedProducts(), listSupplements(), getSettings()]);
+
+  // Données structurées : c'est ce qui permet à Google d'associer le logo et les réseaux à la marque.
+  const base = appUrl();
+  const { contact } = settings;
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${base}/#organisation`,
+        name: "KALIMA",
+        alternateName: "Kalima Cake and bakery",
+        url: base,
+        logo: { "@type": "ImageObject", url: `${base}/icons/icon-512.png`, width: 512, height: 512 },
+        image: `${base}/photos/gamme-boites-et-pot.jpg`,
+        ...(contact.phone ? { telephone: contact.phone } : {}),
+        ...(contact.email ? { email: contact.email } : {}),
+        sameAs: [
+          contact.instagram && `https://instagram.com/${contact.instagram}`,
+          contact.snapchat && `https://www.snapchat.com/add/${contact.snapchat}`,
+        ].filter(Boolean),
+      },
+      { "@type": "WebSite", "@id": `${base}/#site`, name: "KALIMA", alternateName: ["Kalima Cake and bakery"], url: base, inLanguage: "fr", publisher: { "@id": `${base}/#organisation` } },
+    ],
+  };
   const activeSupplements = supplements.filter((s) => s.active);
   const samePrice = activeSupplements.length > 0 && activeSupplements.every((s) => s.price === activeSupplements[0].price);
   const wa = whatsappUrl(settings.contact.whatsapp_number, "Bonjour KALIMA !");
@@ -69,6 +95,7 @@ export default async function HomePage() {
 
   return (
     <div data-hide-footer-cta className="overflow-x-clip">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />
       {/* Accueil : le titre, la gamme en polaroïd, les annotations au feutre ------ */}
       <section className="mx-auto grid max-w-6xl gap-12 px-4 pt-8 pb-16 sm:px-6 md:grid-cols-[1fr_1.05fr] md:items-center md:pt-14 md:pb-24">
         <div className="rise">
