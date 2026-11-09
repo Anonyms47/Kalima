@@ -91,7 +91,7 @@ function layout(ctx: EmailContext, opts: { preheader: string; title: string; not
       ${
         opts.cta
           ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:26px 0 4px;"><tr><td style="border-radius:999px;background:${C.night};">
-        <a href="${opts.cta.url}" style="display:inline-block;padding:14px 26px;font-size:16px;font-weight:bold;color:#ffffff;text-decoration:none;border-radius:999px;">${escape(opts.cta.label)}</a>
+        <a href="${escape(opts.cta.url)}" style="display:inline-block;padding:14px 26px;font-size:16px;font-weight:bold;color:#ffffff;text-decoration:none;border-radius:999px;">${escape(opts.cta.label)}</a>
       </td></tr></table>`
           : ""
       }
@@ -99,7 +99,7 @@ function layout(ctx: EmailContext, opts: { preheader: string; title: string; not
     <tr><td align="center" style="padding:22px 10px;font-size:13px;line-height:1.6;color:${C.muted};">
       Une question ? Écrivez-nous, on vous répond avec plaisir.<br>
       ${contact}
-      ${ctx.whatsappUrl ? `<br><a href="${ctx.whatsappUrl}" style="color:${C.violet};">Nous écrire sur WhatsApp</a>` : ""}
+      ${ctx.whatsappUrl ? `<br><a href="${escape(ctx.whatsappUrl)}" style="color:${C.violet};">Nous écrire sur WhatsApp</a>` : ""}
     </td></tr>
   </table>
 </td></tr>

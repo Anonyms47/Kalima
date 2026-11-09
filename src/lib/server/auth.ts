@@ -13,6 +13,8 @@ import { getSettings } from "./settings";
 
 const SESSION_COOKIE = "kalima_session";
 const SESSION_DAYS = 30;
+// Les comptes de l'équipe ouvrent l'administration : leur session est plus courte.
+const STAFF_SESSION_DAYS = 7;
 const CODE_MINUTES = 10;
 const MAX_CODE_ATTEMPTS = 5;
 
@@ -27,8 +29,8 @@ export type CurrentUser = {
 
 function secret() {
   const value = process.env.SESSION_SECRET;
-  if (!value || value.length < 32) {
-    throw new Error("SESSION_SECRET doit contenir au moins 32 caractères.");
+  if (!value || value.length < 32 || /remplacez/i.test(value)) {
+    throw new Error("SESSION_SECRET doit contenir au moins 32 caractères aléatoires (pas la valeur d'exemple).");
   }
   return value;
 }
@@ -101,6 +103,12 @@ export async function verifyLoginCode(rawEmail: string, rawCode: string): Promis
   const code = rawCode.replace(/\D/g, "");
   if (code.length !== 6) return { ok: false, error: "Le code contient 6 chiffres." };
 
+  // Freine les essais en série : sans cela, redemander des codes permettrait d'essayer des centaines de combinaisons par heure.
+  const ip = await clientIp();
+  if (!(await rateLimit(`verify:email:${email}`, 10, 60 * 60)) || !(await rateLimit(`verify:ip:${ip}`, 40, 60 * 60))) {
+    return { ok: false, error: "Trop d'essais. Patientez un peu avant de réessayer." };
+  }
+
   const [row] = await sql<{ id: string; code_hash: string; attempts: number }[]>`
     update login_codes set attempts = attempts + 1
     where id = (
@@ -151,16 +159,18 @@ export async function consumeLoginLink(token: string): Promise<{ ok: true } | { 
 
 async function createSession(userId: string) {
   const token = randomBytes(32).toString("base64url");
+  const [staff] = await sql`select 1 from staff where user_id = ${userId} and active`;
+  const days = staff ? STAFF_SESSION_DAYS : SESSION_DAYS;
   await sql`
     insert into sessions (token_hash, user_id, expires_at)
-    values (${hashToken(token)}, ${userId}, now() + make_interval(days => ${SESSION_DAYS}))`;
+    values (${hashToken(token)}, ${userId}, now() + make_interval(days => ${days}))`;
   const jar = await cookies();
   jar.set(SESSION_COOKIE, token, {
     httpOnly: true,
     secure: appUrl().startsWith("https://"),
     sameSite: "lax",
     path: "/",
-    maxAge: SESSION_DAYS * 24 * 60 * 60,
+    maxAge: days * 24 * 60 * 60,
   });
 }
 

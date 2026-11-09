@@ -7,7 +7,7 @@ import { sql } from "@/lib/server/db";
 import { DEPOSIT_RATE, EVENT_STATUS_LABELS, type EventStatus } from "@/lib/server/events";
 import { FAMILY_BOX_STATUS_LABELS, type FamilyBoxStatus } from "@/lib/server/family-box";
 import { revokeReferralForOrder, syncRewards } from "@/lib/server/referrals";
-import { saveSetting, type Settings } from "@/lib/server/settings";
+import { getSettings, saveSetting, type Settings } from "@/lib/server/settings";
 import type { ActionResult } from "./types";
 
 function text(formData: FormData, key: string, max: number) {
@@ -118,6 +118,12 @@ export async function saveSettingsAction(_prev: ActionResult, formData: FormData
   const staff = await requireStaff();
   const paymentLink = text(formData, "paymentLink", 500);
   if (paymentLink && !/^https:\/\/\S+$/.test(paymentLink)) return { error: "Le lien de paiement doit commencer par https://" };
+  // Le lien de paiement décide où va l'argent des clients : seule la gérante peut le changer.
+  if (staff.staff.role !== "owner" && paymentLink !== (await getSettings()).payment.link) {
+    return { error: "Seule la gérante peut modifier le lien de paiement." };
+  }
+  const whatsappLink = text(formData, "whatsappLink", 200);
+  if (whatsappLink && !/^https:\/\/\S+$/.test(whatsappLink)) return { error: "Le lien WhatsApp doit commencer par https://" };
   const minutes = Number(formData.get("reservationMinutes"));
   if (!Number.isInteger(minutes) || minutes < 15 || minutes > 7 * 24 * 60) return { error: "Durée de réservation : entre 15 minutes et 7 jours." };
   const contactEmail = text(formData, "contactEmail", 120);
@@ -130,9 +136,9 @@ export async function saveSettingsAction(_prev: ActionResult, formData: FormData
     contact: {
       phone: text(formData, "phone", 40),
       whatsapp_number: text(formData, "whatsappNumber", 20).replace(/\D/g, ""),
-      whatsapp_link: text(formData, "whatsappLink", 200),
-      instagram: text(formData, "instagram", 60).replace(/^@/, ""),
-      snapchat: text(formData, "snapchat", 60).replace(/^@/, ""),
+      whatsapp_link: whatsappLink,
+      instagram: text(formData, "instagram", 60).replace(/[^A-Za-z0-9._]/g, ""),
+      snapchat: text(formData, "snapchat", 60).replace(/[^A-Za-z0-9._-]/g, ""),
       email: contactEmail,
     },
     hours: text(formData, "hours", 120),
