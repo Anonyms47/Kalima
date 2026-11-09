@@ -13,6 +13,7 @@ import {
 import type { Product, Supplement } from "@/lib/server/catalog";
 import { ActionForm } from "../../_components/action-form";
 import { Panel } from "../../_components/ui";
+import { PhotoInput } from "./photo-input";
 
 export function StatusControls({ product, issues }: { product: Product; issues: string[] }) {
   return (
@@ -260,12 +261,12 @@ export function PhotosEditor({ product }: { product: Product }) {
           <>
             <input type="hidden" name="productId" value={product.id} />
             <label htmlFor="photos" className="field-label">Ajouter des photos</label>
-            <input id="photos" name="photos" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" multiple required className="block w-full text-sm file:mr-3 file:rounded-full file:border-0 file:bg-night file:px-4 file:py-2 file:font-semibold file:text-white" />
+            <PhotoInput />
             <div>
               <label htmlFor="alt" className="field-label">Description <span className="font-normal text-muted">(pour l&apos;accessibilité)</span></label>
               <input id="alt" name="alt" placeholder={`${product.name} dans une boîte kraft KALIMA`} className="field" />
             </div>
-            <p className="text-xs text-muted">JPEG, PNG, WebP ou HEIC, 8 Mo maximum. Les photos sont optimisées sans être recadrées.</p>
+            <p className="text-xs text-muted">JPEG, PNG, WebP ou HEIC. Les photos sont réduites et optimisées sans être recadrées.</p>
             <button type="submit" disabled={pending} className="btn-primary btn-sm">{pending ? "Envoi…" : "Téléverser"}</button>
           </>
         )}
